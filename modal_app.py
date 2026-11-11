@@ -150,8 +150,13 @@ def download_data(limit: int | None = None):
 
 
 @app.function(image=image, cpu=8, memory=32768, timeout=7200, volumes={"/vol": vol})
-def build_manifests():
-    return _run("01_audit_and_splits.py")
+def build_manifests(force_manifest: bool = False, force_confirm: bool = False):
+    args = []
+    if force_manifest:
+        args.append("--force-manifest")
+    if force_confirm:
+        args.append("--force-confirm")
+    return _run("01_audit_and_splits.py", args)
 
 
 @app.function(image=image, cpu=8, memory=32768, timeout=14400, volumes={"/vol": vol})
