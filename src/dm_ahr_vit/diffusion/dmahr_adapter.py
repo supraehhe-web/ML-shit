@@ -174,6 +174,7 @@ def clean_batch(
     device: str = "cuda",
     seed: int | None = None,
     num_timesteps: int | None = None,
+    use_bf16: bool = False,
 ) -> tuple[list[Image.Image], dict]:
     """Run DM-AHR on a batch of images. Returns cleaned images and run stats."""
     size = int(cfg["native_resolution"])
@@ -193,7 +194,10 @@ def clean_batch(
     # Upstream's `continous=False` path returns `ret_img[-1]`, which silently
     # collapses a batch to its last image. Ask for the full trajectory and take
     # the final B rows, which is the last denoised set for the whole batch.
-    trajectory = net.super_resolution(x, continous=True)
+    # bf16 autocast roughly halves the cost of the 2,000 sequential UNet calls
+    # on Ampere tensor cores; the sampler is compute bound, not memory bound.
+    with torch.autocast(device_type="cuda", dtype=torch.bfloat16, enabled=use_bf16):
+        trajectory = net.super_resolution(x, continous=True)
     out = trajectory[-x.shape[0]:]
     finite = bool(torch.isfinite(out).all())
     stats = {
@@ -203,6 +207,7 @@ def clean_batch(
         "min": float(out.min()),
         "max": float(out.max()),
         "seed": seed,
+        "bf16": use_bf16,
         "batch_returned": int(out.shape[0]),
         "batch_requested": int(x.shape[0]),
     }

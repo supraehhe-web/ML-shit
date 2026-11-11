@@ -61,11 +61,14 @@ def _run(script: str, args: list[str] | None = None) -> int:
     print("RUN", " ".join(cmd), flush=True)
     started = time.time()
     # Commit periodically so checkpoints written by the child survive
-    # preemption; a single commit at the end would lose a long run.
+    # preemption. The interval is generous because committing a volume holding
+    # tens of thousands of files is expensive, and several shards committing
+    # every minute will starve the workers of I/O.
+    commit_interval = int(os.environ.get("VOLUME_COMMIT_SECONDS", "900"))
     stop = threading.Event()
 
     def _committer() -> None:
-        while not stop.wait(60):
+        while not stop.wait(commit_interval):
             try:
                 vol.commit()
             except Exception as exc:  # noqa: BLE001
@@ -150,8 +153,13 @@ def download_data(limit: int | None = None):
 
 
 @app.function(image=image, cpu=8, memory=32768, timeout=7200, volumes={"/vol": vol})
-def build_manifests():
-    return _run("01_audit_and_splits.py")
+def build_manifests(force_manifest: bool = False, force_confirm: bool = False):
+    args = []
+    if force_manifest:
+        args.append("--force-manifest")
+    if force_confirm:
+        args.append("--force-confirm")
+    return _run("01_audit_and_splits.py", args)
 
 
 @app.function(image=image, cpu=8, memory=32768, timeout=14400, volumes={"/vol": vol})
@@ -162,6 +170,35 @@ def hair_pipeline():
 @app.function(image=image, gpu="A100-80GB", timeout=3600, volumes={"/vol": vol})
 def dmahr_smoke():
     return _run("03_dmahr_smoke.py")
+
+
+@app.function(image=image, gpu="A100-80GB", timeout=3600, volumes={"/vol": vol})
+def dmahr_bench():
+    """Measure whether bf16 / torch.compile cut per-image sampling cost."""
+    return _run("03b_dmahr_bench.py")
+
+
+# The sampler uses ~1.5 GB and runs 2,000 small UNet calls, so it is likely
+# launch-overhead bound rather than compute bound. These variants measure the
+# real cost on cheaper GPUs, which is what decides the budget.
+@app.function(image=image, gpu="L4", timeout=3600, volumes={"/vol": vol})
+def dmahr_bench_l4():
+    return _run("03b_dmahr_bench.py", ["--tag", "l4"])
+
+
+@app.function(image=image, gpu="A10", timeout=3600, volumes={"/vol": vol})
+def dmahr_bench_a10():
+    return _run("03b_dmahr_bench.py", ["--tag", "a10"])
+
+
+@app.function(image=image, gpu="T4", timeout=3600, volumes={"/vol": vol})
+def dmahr_bench_t4():
+    return _run("03b_dmahr_bench.py", ["--tag", "t4"])
+
+
+@app.function(image=image, gpu="A100-80GB", timeout=3600, volumes={"/vol": vol})
+def dmahr_batch_sweep(batches: str = "32,64,128,256"):
+    return _run("03c_batch_sweep.py", ["--batches", batches, "--tag", "a100"])
 
 
 @app.function(image=image, gpu="A100-80GB", timeout=86400, volumes={"/vol": vol})
@@ -182,6 +219,84 @@ def dmahr_sample(shard: int, n_shards: int, pairs_split: str = ""):
     return _run("05_dmahr_sample.py", args)
 
 
+# Sampling peaks at ~1.5 GB, so a mid-range GPU is enough and has capacity when
+# the A100 pool is saturated.
+@app.function(image=image, gpu="A10G", timeout=86400, volumes={"/vol": vol})
+def dmahr_sample_a10g(shard: int, n_shards: int, pairs_split: str = ""):
+    args = ["--shard", str(shard), "--n-shards", str(n_shards)]
+    if pairs_split:
+        args += ["--pairs-split", pairs_split]
+    return _run("05_dmahr_sample.py", args)
+
+
+# L4 is $0.80/hr vs $2.50/hr for A100-80GB. Sampling peaks at 1.5 GB and is
+# launch-overhead bound, so L4 is the budget-viable choice for Arm C.
+@app.function(image=image, gpu="L4", timeout=86400, volumes={"/vol": vol})
+def dmahr_sample_l4(shard: int, n_shards: int, pairs_split: str = ""):
+    args = ["--shard", str(shard), "--n-shards", str(n_shards)]
+    if pairs_split:
+        args += ["--pairs-split", pairs_split]
+    return _run("05_dmahr_sample.py", args)
+
+
+# A100 40GB is $2.10/hr vs $2.50/hr for 80GB with identical compute, and
+# sampling peaks at 1.5 GB, so 40GB is the budget-optimal choice.
+@app.function(image=image, gpu="A100-40GB", timeout=86400, volumes={"/vol": vol})
+def dmahr_sample_a100_40(shard: int, n_shards: int, pairs_split: str = ""):
+    args = ["--shard", str(shard), "--n-shards", str(n_shards)]
+    if pairs_split:
+        args += ["--pairs-split", pairs_split]
+    return _run("05_dmahr_sample.py", args)
+
+
+@app.function(image=image, gpu="A100-40GB", timeout=86400, volumes={"/vol": vol})
+def dmahr_sample_bf16(shard: int, n_shards: int, pairs_split: str = ""):
+    args = ["--shard", str(shard), "--n-shards", str(n_shards), "--bf16"]
+    if pairs_split:
+        args += ["--pairs-split", pairs_split]
+    return _run("05_dmahr_sample.py", args)
+
+
+@app.function(image=image, cpu=1, memory=2048, timeout=86400, volumes={"/vol": vol})
+def dmahr_sample_driver_bf16(n_shards: int = 4, pairs_split: str = "test"):
+    handles = [dmahr_sample_bf16.spawn(i, n_shards, "") for i in range(n_shards)]
+    if pairs_split:
+        handles.append(dmahr_sample_bf16.spawn(0, 1, pairs_split))
+    results = [h.get() for h in handles]
+    print("all shards finished:", results, flush=True)
+    return results
+
+
+@app.function(image=image, cpu=1, memory=2048, timeout=86400, volumes={"/vol": vol})
+def dmahr_sample_driver_a100_40(n_shards: int = 4, pairs_split: str = "test"):
+    handles = [dmahr_sample_a100_40.spawn(i, n_shards, "") for i in range(n_shards)]
+    if pairs_split:
+        handles.append(dmahr_sample_a100_40.spawn(0, 1, pairs_split))
+    results = [h.get() for h in handles]
+    print("all shards finished:", results, flush=True)
+    return results
+
+
+@app.function(image=image, cpu=1, memory=2048, timeout=86400, volumes={"/vol": vol})
+def dmahr_sample_driver_l4(n_shards: int = 4, pairs_split: str = "test"):
+    handles = [dmahr_sample_l4.spawn(i, n_shards, "") for i in range(n_shards)]
+    if pairs_split:
+        handles.append(dmahr_sample_l4.spawn(0, 1, pairs_split))
+    results = [h.get() for h in handles]
+    print("all shards finished:", results, flush=True)
+    return results
+
+
+@app.function(image=image, cpu=1, memory=2048, timeout=86400, volumes={"/vol": vol})
+def dmahr_sample_driver_a10g(n_shards: int = 4, pairs_split: str = "test"):
+    handles = [dmahr_sample_a10g.spawn(i, n_shards, "") for i in range(n_shards)]
+    if pairs_split:
+        handles.append(dmahr_sample_a10g.spawn(0, 1, pairs_split))
+    results = [h.get() for h in handles]
+    print("all shards finished:", results, flush=True)
+    return results
+
+
 @app.local_entrypoint()
 def sample_all(n_shards: int = 4):
     """Run Arm C for every hair-present image, then for the held-out test pairs."""
@@ -192,13 +307,19 @@ def sample_all(n_shards: int = 4):
     print(dmahr_sample.remote(0, 1, "test"), flush=True)
 
 
-@app.function(image=image, cpu=1, memory=2048, timeout=600, volumes={"/vol": vol})
+@app.function(image=image, cpu=1, memory=2048, timeout=86400, volumes={"/vol": vol})
 def dmahr_sample_driver(n_shards: int = 4, pairs_split: str = "test"):
-    """Spawn Arm C shards remotely so they outlive the local client."""
-    ids = [dmahr_sample.spawn(i, n_shards, "").object_id for i in range(n_shards)]
-    pair_id = dmahr_sample.spawn(0, 1, pairs_split).object_id if pairs_split else None
-    print({"shards": ids, "pairs": pair_id}, flush=True)
-    return {"shards": ids, "pairs": pair_id}
+    """Spawn Arm C shards and block until every one finishes.
+
+    Returning immediately would let the app tear down and kill the spawned
+    shards, so the driver waits on the handles.
+    """
+    handles = [dmahr_sample.spawn(i, n_shards, "") for i in range(n_shards)]
+    if pairs_split:
+        handles.append(dmahr_sample.spawn(0, 1, pairs_split))
+    results = [h.get() for h in handles]
+    print("all shards finished:", results, flush=True)
+    return results
 
 
 @app.function(image=image, gpu="A100-80GB", timeout=86400, volumes={"/vol": vol})
