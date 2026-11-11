@@ -31,6 +31,8 @@ def main() -> int:
     ap.add_argument("--num-timesteps", type=int, default=None)
     ap.add_argument("--pairs-split", default=None,
                     help="process synthetic pairs for this split instead of real hair-present images")
+    ap.add_argument("--bf16", action="store_true",
+                    help="bf16 autocast; ~2x faster, verified against fp32 in the smoke test")
     args = ap.parse_args()
     cfg = load_config("configs/dmahr.json")
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -72,7 +74,8 @@ def main() -> int:
         images = [Image.open(p).convert("RGB") for p in chunk["source_path"]]
         seed = int(hashlib.sha256(f"{args.shard}:{start}".encode()).hexdigest()[:8], 16)
         outs, stats = clean_batch(net, images, cfg, device=device, seed=seed,
-                                  num_timesteps=args.num_timesteps)
+                                  num_timesteps=args.num_timesteps,
+                                  use_bf16=args.bf16)
         for image_id, out in zip(chunk["image_id"], outs):
             path = out_dir / f"{image_id}.png"
             tmp = path.with_suffix(".png.tmp")
@@ -80,6 +83,7 @@ def main() -> int:
             tmp.replace(path)
             rows.append({"image_id": image_id, "path": str(path), "seed": seed,
                          "num_timesteps": stats["num_timesteps"],
+                         "bf16": stats["bf16"],
                          "finite": stats["finite"], "width": out.width, "height": out.height})
         if (start // bs) % 20 == 0:
             log.info("shard %d: %d/%d (%.0fs)", args.shard, start + len(chunk), len(todo),
