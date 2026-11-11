@@ -32,7 +32,8 @@ class GradCAM:
     def __enter__(self):
         def fwd_hook(_module, _inp, out):
             self.activations = out
-            out.register_hook(self._save_grad)
+            if out.requires_grad:
+                out.register_hook(self._save_grad)
 
         self._handle = self.layer.register_forward_hook(fwd_hook)
         return self
@@ -50,11 +51,17 @@ class GradCAM:
         """Return a normalized (grid, grid) CAM for one image tensor (1,3,H,W)."""
         self.model.eval()
         self.model.zero_grad(set_to_none=True)
-        logits = self.model(x)
-        if class_idx is None:
-            class_idx = int(logits.argmax(dim=1))
-        score = logits[0, class_idx]
-        score.backward(retain_graph=False)
+        # Grad-CAM needs a gradient path back to the patch grid, so the input
+        # must require grad even though the model is in eval mode.
+        x = x.detach().clone().requires_grad_(True)
+        with torch.enable_grad():
+            logits = self.model(x)
+            if class_idx is None:
+                class_idx = int(logits.argmax(dim=1))
+            score = logits[0, class_idx]
+            score.backward(retain_graph=False)
+        if self.gradients is None:
+            raise RuntimeError("Grad-CAM captured no gradients on conv_proj")
         act = self.activations.detach()[0]           # (768, g, g)
         grad = self.gradients.detach()[0]            # (768, g, g)
         weights = grad.mean(dim=(1, 2), keepdim=True)
