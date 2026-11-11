@@ -25,7 +25,7 @@
     "overfit_pairs": 12
   },
   "sampling": {
-    "batch_size": 4,
+    "batch_size": 32,
     "num_timesteps": 2000,
     "reduced_steps_ablation": null
   }

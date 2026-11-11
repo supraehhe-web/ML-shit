@@ -247,3 +247,23 @@ def acceptance():
 def finalize():
     return _run("10_finalize.py")
 
+
+@app.function(image=image, gpu="A100-80GB", timeout=86400, volumes={"/vol": vol})
+def eval_and_xai_all(arms: str = "A,B,Astar,C"):
+    """Locked test evaluation then XAI for every checkpoint that exists."""
+    done = []
+    for arm in [a for a in arms.split(",") if a]:
+        for seed in (42, 123, 2026):
+            ckpt = f"/vol/artifacts/checkpoints/vit/{arm}_seed{seed}/best.pt"
+            if not os.path.exists(ckpt):
+                print("skip (no checkpoint):", ckpt, flush=True)
+                continue
+            pred = f"/vol/artifacts/predictions/metrics_{arm}_seed{seed}.json"
+            if not os.path.exists(pred):
+                _run("07_eval_vit.py", ["--arm", arm, "--seed", str(seed)])
+            xai = f"/vol/artifacts/logs/xai_summary_{arm}_seed{seed}_X1.json"
+            if not os.path.exists(xai):
+                _run("08_xai.py", ["--arm", arm, "--seed", str(seed)])
+            done.append(f"{arm}/{seed}")
+    return done
+

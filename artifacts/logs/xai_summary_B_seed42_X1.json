@@ -1,0 +1,16 @@
+{
+  "all_maps_finite": true,
+  "arm": "B",
+  "chance_gaussian_overlap20_mean": 0.6437935892252176,
+  "chance_gaussian_pointing_mean": 0.9527296937416777,
+  "chance_uniform_overlap20_mean": 0.20001545355314124,
+  "gradcam_overlap20_mean": 0.3895020842956005,
+  "gradcam_pointing_mean": 0.5193075898801598,
+  "map_shape": "(224, 224)",
+  "n": 1502,
+  "rollout_overlap20_mean": 0.6051432422668923,
+  "rollout_pointing_mean": 0.8708388814913449,
+  "seconds": 99.833,
+  "seed": 42,
+  "tier": "X1"
+}
