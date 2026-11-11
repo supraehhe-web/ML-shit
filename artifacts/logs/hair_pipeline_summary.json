@@ -1,0 +1,28 @@
+{
+  "dullrazor_config_hash": "0af616f50f77e1c57c4fff1e1f6bb8c2ab99100052c703d937bccbbf109a9d70",
+  "hair_present": 8993,
+  "hair_present_by_class": {
+    "akiec": 320,
+    "bcc": 482,
+    "bkl": 1056,
+    "df": 108,
+    "mel": 1109,
+    "nv": 5807,
+    "vasc": 111
+  },
+  "hair_present_by_split": {
+    "test": 1316,
+    "train": 6357,
+    "val": 1320
+  },
+  "images": 10015,
+  "screen_config_hash": "e232efe4705133a175ec50d5147954a6545456d469b6353fb42d348387704273",
+  "seconds_process": 438.437,
+  "seconds_synthetic": 17.137,
+  "synthetic_by_split": {
+    "test": 186,
+    "train": 654,
+    "val": 182
+  },
+  "synthetic_pairs": 1022
+}

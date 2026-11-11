@@ -1,0 +1,162 @@
+{
+  "c0_decoded": 10015,
+  "c0_extra": 1705,
+  "class_fraction_balance": {
+    "akiec": {
+      "test": 0.1498,
+      "train": 0.7003,
+      "val": 0.1498
+    },
+    "bcc": {
+      "test": 0.1498,
+      "train": 0.7004,
+      "val": 0.1498
+    },
+    "bkl": {
+      "test": 0.1501,
+      "train": 0.6997,
+      "val": 0.1501
+    },
+    "df": {
+      "test": 0.1478,
+      "train": 0.7043,
+      "val": 0.1478
+    },
+    "mel": {
+      "test": 0.15,
+      "train": 0.6999,
+      "val": 0.15
+    },
+    "nv": {
+      "test": 0.15,
+      "train": 0.6999,
+      "val": 0.15
+    },
+    "vasc": {
+      "test": 0.1479,
+      "train": 0.7042,
+      "val": 0.1479
+    }
+  },
+  "collection_expected": 11720,
+  "collection_total": 11720,
+  "dhash_candidates": 70062,
+  "exclusion_reasons": {
+    "c0_extra_quarantined": 1705
+  },
+  "exclusions": 1705,
+  "frozen_splits": {
+    "counts": {
+      "test": {
+        "akiec": 49,
+        "bcc": 77,
+        "bkl": 165,
+        "df": 17,
+        "mel": 167,
+        "nv": 1006,
+        "vasc": 21
+      },
+      "train": {
+        "akiec": 229,
+        "bcc": 360,
+        "bkl": 769,
+        "df": 81,
+        "mel": 779,
+        "nv": 4693,
+        "vasc": 100
+      },
+      "val": {
+        "akiec": 49,
+        "bcc": 77,
+        "bkl": 165,
+        "df": 17,
+        "mel": 167,
+        "nv": 1006,
+        "vasc": 21
+      }
+    },
+    "created_at": "2026-11-11T14:37:49+00:00",
+    "fractions": {
+      "test": 0.15,
+      "train": 0.7,
+      "val": 0.15
+    },
+    "groups": {
+      "test": 1437,
+      "train": 4597,
+      "val": 1436
+    },
+    "protocol_hash": "854c6da45d6bac6e12a34f3702816572a55529961265adbe48639a11584628a3",
+    "seed": 42,
+    "sizes": {
+      "test": 1502,
+      "train": 7011,
+      "val": 1502
+    },
+    "splits_sha256": "fda56cf3c555e6d22f823510670e1392cd9b1b27778a50a831e68f1dd8d5be2b",
+    "total_groups": 7470,
+    "total_images": 10015,
+    "total_lesions": 7470
+  },
+  "groups_total": 7470,
+  "metadata_comparison": {
+    "all_match": true,
+    "count_deltas": {
+      "akiec": 0,
+      "bcc": 0,
+      "bkl": 0,
+      "df": 0,
+      "mel": 0,
+      "nv": 0,
+      "vasc": 0
+    },
+    "counts": {
+      "akiec": 327,
+      "bcc": 514,
+      "bkl": 1099,
+      "df": 115,
+      "mel": 1113,
+      "nv": 6705,
+      "vasc": 142
+    },
+    "expected_counts": {
+      "akiec": 327,
+      "bcc": 514,
+      "bkl": 1099,
+      "df": 115,
+      "mel": 1113,
+      "nv": 6705,
+      "vasc": 142
+    },
+    "expected_total": 10015,
+    "total": 10015,
+    "total_matches": true,
+    "unique_lesions": 7470
+  },
+  "mixed_class_groups": 0,
+  "near_duplicates_confirmed": 21,
+  "protocol_hash": "854c6da45d6bac6e12a34f3702816572a55529961265adbe48639a11584628a3",
+  "seconds": 22.489,
+  "split_verification": {
+    "ok": true,
+    "problems": [],
+    "sizes": {
+      "test": 1502,
+      "train": 7011,
+      "val": 1502
+    }
+  },
+  "target_fractions": {
+    "test": 0.15,
+    "train": 0.7,
+    "val": 0.15
+  },
+  "x1_masks": {
+    "all_ok": 10015,
+    "all_present": 10015,
+    "size_mismatches": 0,
+    "test_ok": 1502,
+    "test_rows": 1502,
+    "test_with_mask": 1502
+  }
+}

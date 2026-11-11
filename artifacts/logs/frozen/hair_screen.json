@@ -1,0 +1,14 @@
+{
+  "blackhat_threshold": 18,
+  "config_hash": "e232efe4705133a175ec50d5147954a6545456d469b6353fb42d348387704273",
+  "coverage_threshold": 0.01,
+  "dilate_iterations": 2,
+  "dilate_kernel": 5,
+  "frozen": true,
+  "kernel_length": 17,
+  "light_hair": true,
+  "min_component_area": 40,
+  "orientations": 12,
+  "tophat_threshold": 22,
+  "version": "1.0.0"
+}

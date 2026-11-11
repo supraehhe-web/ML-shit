@@ -1,0 +1,13 @@
+{
+  "python": "3.11.12",
+  "torch": "2.5.1+cu124",
+  "cuda": "12.4",
+  "cuda_available": true,
+  "device": "NVIDIA A100 80GB PCIe",
+  "capability": [
+    8,
+    0
+  ],
+  "total_memory_gb": 85.12,
+  "nvidia_smi": "NVIDIA A100 80GB PCIe, 81920 MiB, 610.57.04"
+}

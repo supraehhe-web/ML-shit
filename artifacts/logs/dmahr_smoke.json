@@ -1,0 +1,144 @@
+{
+  "all_pass": true,
+  "batch4_seconds": 39.72,
+  "batch_shape": [
+    64,
+    128,
+    128,
+    3
+  ],
+  "batch_sweep": {
+    "8": {
+      "returned": 8,
+      "seconds": 48.33,
+      "seconds_per_image": 6.041
+    },
+    "16": {
+      "returned": 16,
+      "seconds": 75.08,
+      "seconds_per_image": 4.693
+    },
+    "32": {
+      "returned": 32,
+      "seconds": 139.26,
+      "seconds_per_image": 4.352
+    },
+    "64": {
+      "returned": 64,
+      "seconds": 262.44,
+      "seconds_per_image": 4.101
+    }
+  },
+  "checkpoint": "/__modal/volumes/vo-6JWuL2MaxBaVrU6eGzMLBk/data/raw/dmahr_weights/I725000_E1083_gen.pth",
+  "checkpoint_sha256": "c99e406050d3aaf36473f76477bcfb8ba05d80a420d50d57533eac75b8c8d2fe",
+  "device": "NVIDIA A100-SXM4-80GB",
+  "finite": true,
+  "geometry_preserved": true,
+  "load_seconds": 1.57,
+  "num_timesteps": 2000,
+  "peak_memory_gb": 4.87,
+  "range_ok": true,
+  "reload_identical": true,
+  "seconds_per_image_batch4": 9.93,
+  "single_seconds": 37.81,
+  "single_shape": [
+    128,
+    128,
+    3
+  ],
+  "upstream_config": {
+    "datasets": {
+      "train": {
+        "batch_size": 4,
+        "data_len": -1,
+        "dataroot": "hair_removal/akiec_16_128",
+        "datatype": "img",
+        "l_resolution": 16,
+        "mode": "HR",
+        "name": "FFHQ",
+        "num_workers": 1,
+        "r_resolution": 128,
+        "use_shuffle": true
+      },
+      "val": {
+        "data_len": -1,
+        "dataroot": "hair_removal/akiec_16_128",
+        "datatype": "img",
+        "l_resolution": 16,
+        "mode": "LRHR",
+        "name": "CelebaHQ",
+        "r_resolution": 128
+      }
+    },
+    "gpu_ids": [
+      0
+    ],
+    "model": {
+      "beta_schedule": {
+        "train": {
+          "linear_end": 0.01,
+          "linear_start": 1e-06,
+          "n_timestep": 2000,
+          "schedule": "linear"
+        },
+        "val": {
+          "linear_end": 0.01,
+          "linear_start": 1e-06,
+          "n_timestep": 2000,
+          "schedule": "linear"
+        }
+      },
+      "diffusion": {
+        "channels": 3,
+        "conditional": true,
+        "image_size": 128
+      },
+      "finetune_norm": false,
+      "unet": {
+        "attn_res": [
+          16
+        ],
+        "channel_multiplier": [
+          1,
+          2,
+          4,
+          8,
+          8
+        ],
+        "dropout": 0.2,
+        "in_channel": 6,
+        "inner_channel": 64,
+        "out_channel": 3,
+        "res_blocks": 2
+      },
+      "which_model_G": "sr3"
+    },
+    "name": "sr_ffhq",
+    "path": {
+      "checkpoint": "checkpoint",
+      "log": "logs",
+      "results": "results",
+      "resume_state": "experiments/sr_ffhq_231220_121203/checkpoint/I725000_E1083",
+      "tb_logger": "tb_logger"
+    },
+    "phase": "train",
+    "train": {
+      "ema_scheduler": {
+        "ema_decay": 0.9999,
+        "step_start_ema": 5000,
+        "update_ema_every": 1
+      },
+      "n_iter": 660000,
+      "optimizer": {
+        "lr": 0.0001,
+        "type": "adam"
+      },
+      "print_freq": 200,
+      "save_checkpoint_freq": 10000.0,
+      "val_freq": 10000.0
+    },
+    "wandb": {
+      "project": "sr_ffhq"
+    }
+  }
+}
