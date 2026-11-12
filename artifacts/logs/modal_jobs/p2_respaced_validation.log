@@ -1,0 +1,21 @@
+✓ Initialized. View run at 
+https://modal.com/apps/ncip85613/main/ap-ebtAfOf0MyubF5n279sZ62
+✓ Created objects.
+RUN /usr/local/bin/python /root/proj/scripts/22_arm_c_diagnose_v2.py --stage respace --score-n 50 --bf16 --gpu A100-40GB --budget-usd 0.4
+{"label": "arm_c_diagnose_v2:respace", "units": 1, "seconds_per_unit": 183.5, "gpu": "A100-40GB", "estimated_seconds": 183.5, "estimated_usd": 0.11, "budget_usd": 0.4, "price_source": "reports/compute_plan.md (modal.com/pricing, read 2026-11-11)"}
+loaded DM-AHR checkpoint /__modal/volumes/vo-Yfgbqu0raQMBZb7syrtU35/data/raw/dmahr_weights/I725000_E1083_gen.pth (strict)
+
+/usr/local/lib/python3.11/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=AlexNet_Weights.IMAGENET1K_V1`. You can also use `weights=AlexNet_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+
+  0%|          | 0.00/233M [00:00<?, ?B/s]
+/usr/local/lib/python3.11/site-packages/lpips/lpips.py:107: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  self.load_state_dict(torch.load(model_path, map_location='cpu'), strict=False)
+2026-11-12 15:31:44,277 INFO dm_ahr_vit :: respaced released 25 steps: PSNR 26.91 SSIM 0.698
+
+2026-11-12 15:31:50,992 INFO dm_ahr_vit :: respaced released 50 steps: PSNR 26.73 SSIM 0.695
+
+2026-11-12 15:32:02,963 INFO dm_ahr_vit :: respaced released 100 steps: PSNR 26.63 SSIM 0.690
+

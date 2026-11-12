@@ -1,0 +1,26 @@
+✓ Initialized. View run at 
+https://modal.com/apps/ncip85613/main/ap-tvy6uNQcDr8UoRg9Zj7Ngb
+✓ Created objects.
+RUN /usr/local/bin/python /root/proj/scripts/run_chain.py 08b_xai_v2.py --arm A --seed 42 --extras --gpu A100-40GB --budget-usd 0.5 08b_xai_v2.py --arm A --seed 123 --gpu A100-40GB --budget-usd 0.3 08b_xai_v2.py --arm A --seed 2026 --gpu A100-40GB --budget-usd 0.3
+CHAIN 08b_xai_v2.py --arm A --seed 42 --extras --gpu A100-40GB --budget-usd 0.5
+{"label": "xai_v2_A_42", "units": 1502, "seconds_per_unit": 0.18830892143808256, "gpu": "A100-40GB", "estimated_seconds": 342.8, "estimated_usd": 0.2, "budget_usd": 0.5, "price_source": "reports/compute_plan.md (modal.com/pricing, read 2026-11-11)"}
+
+  0%|          | 0.00/330M [00:00<?, ?B/s]
+2026-11-12 15:25:32,307 INFO dm_ahr_vit :: xai_v2 finished in 259.8s
+{'overlap_chance': 0.2, 'pointing_chance': 0.4547, 'overlap_ceiling': 0.5563, 'gradcam_overlap20': 0.1999, 'rollout_overlap20': 0.4783, 'gradcam_pointing': 0.4161, 'rollout_pointing': 0.9581, 'gauss_overlap20': 0.4677, 'gauss_pointing': 0.9507, 'gradcam_overlap_norm': 0.4363, 'rollout_overlap_norm': 0.8298, 'gauss_overlap_norm': 0.8905, 'shift_gradcam_overlap20': 0.2239, 'shift_rollout_overlap20': 0.4934, 'shift_gradcam_pointing': 0.4258, 'shift_rollout_pointing': 0.8979, 'shift_gauss_overlap20': 0.53, 'shift_gauss_pointing': 0.9563, 'shift_pointing_chance': 0.3815}
+CHAIN-EXIT 0 in 271.1s
+CHAIN 08b_xai_v2.py --arm A --seed 123 --gpu A100-40GB --budget-usd 0.3
+{"label": "xai_v2_A_123", "units": 1502, "seconds_per_unit": 0.08415446071904129, "gpu": "A100-40GB", "estimated_seconds": 186.4, "estimated_usd": 0.11, "budget_usd": 0.3, "price_source": "reports/compute_plan.md (modal.com/pricing, read 2026-11-11)"}
+2026-11-12 15:27:05,914 INFO dm_ahr_vit :: xai_v2 finished in 86.2s
+{'overlap_chance': 0.2, 'pointing_chance': 0.4547, 'overlap_ceiling': 0.5563, 'gradcam_overlap20': 0.3669, 'rollout_overlap20': 0.4018, 'gradcam_pointing': 0.6904, 'rollout_pointing': 0.8129, 'gauss_overlap20': 0.4677, 'gauss_pointing': 0.9507, 'gradcam_overlap_norm': 0.7053, 'rollout_overlap_norm': 0.6818, 'gauss_overlap_norm': 0.8905}
+CHAIN-EXIT 0 in 93.5s
+CHAIN 08b_xai_v2.py --arm A --seed 2026 --gpu A100-40GB --budget-usd 0.3
+{"label": "xai_v2_A_2026", "units": 1502, "seconds_per_unit": 0.08415446071904129, "gpu": "A100-40GB", "estimated_seconds": 186.4, "estimated_usd": 0.11, "budget_usd": 0.3, "price_source": "reports/compute_plan.md (modal.com/pricing, read 2026-11-11)"}
+2026-11-12 15:28:40,991 INFO dm_ahr_vit :: xai_v2 finished in 87.1s
+{'overlap_chance': 0.2, 'pointing_chance': 0.4547, 'overlap_ceiling': 0.5563, 'gradcam_overlap20': 0.3583, 'rollout_overlap20': 0.4249, 'gradcam_pointing': 0.6631, 'rollout_pointing': 0.9214, 'gauss_overlap20': 0.4677, 'gauss_pointing': 0.9507, 'gradcam_overlap_norm': 0.6986, 'rollout_overlap_norm': 0.7383, 'gauss_overlap_norm': 0.8905}
+CHAIN-EXIT 0 in 95.2s
+EXIT 0 in 459.9s
+Stopping app - local entrypoint completed.
+✓ App completed. View run at 
+https://modal.com/apps/ncip85613/main/ap-tvy6uNQcDr8UoRg9Zj7Ngb
+exit=0

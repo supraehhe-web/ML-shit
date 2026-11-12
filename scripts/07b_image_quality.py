@@ -26,6 +26,7 @@ from dm_ahr_vit.utils import record_run, setup_logging, timed  # noqa: E402
 from dm_ahr_vit.config import load_frozen  # noqa: E402
 
 log = setup_logging()
+C_ARMS = ("C", "Cfixed", "Creleased")
 
 
 def resolve(path: str) -> Path:
@@ -70,7 +71,7 @@ def main() -> int:
     pairs = pairs[pairs["split"] == args.split]
     if args.limit:
         pairs = pairs.head(args.limit)
-    c_dir = processed_dir("synth") / args.split / "cleaned_C"
+
 
     rows = []
     with timed("image_quality", log) as t:
@@ -90,15 +91,16 @@ def main() -> int:
             for arm, arr in (("hairy_input", hairy), ("B", b_out)):
                 m = score(arr, ref, cfg=sampling_cfg)
                 row[f"{arm}_psnr"], row[f"{arm}_ssim"] = m["psnr"], m["ssim"]
-            c_path = c_dir / f"{r.image_id}.png"
-            if c_path.exists():
-                c_out = np.array(Image.open(c_path).convert("RGB"))
-                m = score(c_out, ref, cfg=sampling_cfg)
-                row["C_psnr"], row["C_ssim"] = m["psnr"], m["ssim"]
-                row["C_status"] = "ok"
-            else:
-                row["C_psnr"] = row["C_ssim"] = float("nan")
-                row["C_status"] = "missing"
+            for c_arm in C_ARMS:
+                c_path = processed_dir("synth") / args.split / f"cleaned_{c_arm}" / f"{r.image_id}.png"
+                if c_path.exists():
+                    c_out = np.array(Image.open(c_path).convert("RGB"))
+                    m = score(c_out, ref, cfg=sampling_cfg)
+                    row[f"{c_arm}_psnr"], row[f"{c_arm}_ssim"] = m["psnr"], m["ssim"]
+                    row[f"{c_arm}_status"] = "ok"
+                else:
+                    row[f"{c_arm}_psnr"] = row[f"{c_arm}_ssim"] = float("nan")
+                    row[f"{c_arm}_status"] = "missing"
             rows.append(row)
 
         df = pd.DataFrame(rows)
@@ -108,11 +110,11 @@ def main() -> int:
     summary = {
         "split": args.split,
         "pairs": int(len(df)),
-        "C_scored": int((df["C_status"] == "ok").sum()),
+        "C_scored": {a: int((df[f"{a}_status"] == "ok").sum()) for a in C_ARMS},
         "means": {
             col: float(df[col].mean()) for col in
-            ("hairy_input_psnr", "B_psnr", "C_psnr",
-             "hairy_input_ssim", "B_ssim", "C_ssim")
+            ["hairy_input_psnr", "B_psnr", "hairy_input_ssim", "B_ssim"]
+            + [f"{a}_{m}" for a in C_ARMS for m in ("psnr", "ssim")]
             if col in df and df[col].notna().any()
         },
         "seconds": t["seconds"],
