@@ -1,0 +1,69 @@
+✓ Initialized. View run at 
+https://modal.com/apps/ncip85613/main/ap-jvHYqoDQw9xy0XbM1uiXCO
+✓ Created objects.
+RUN /usr/local/bin/python /root/proj/scripts/22_arm_c_diagnose_v2.py --stage overfit --score-n 50 --bf16 --gpu A100-40GB --budget-usd 0.5
+{"label": "arm_c_diagnose_v2:overfit", "units": 1, "seconds_per_unit": 258.7, "gpu": "A100-40GB", "estimated_seconds": 258.7, "estimated_usd": 0.15, "budget_usd": 0.5, "price_source": "reports/compute_plan.md (modal.com/pricing, read 2026-11-11)"}
+2026-11-12 15:17:05,929 INFO dm_ahr_vit :: dmahr iter 100/2000 loss 0.19758 (12s)
+2026-11-12 15:17:14,530 INFO dm_ahr_vit :: dmahr iter 200/2000 loss 0.20560 (20s)
+2026-11-12 15:17:23,656 INFO dm_ahr_vit :: dmahr iter 300/2000 loss 0.13442 (29s)
+2026-11-12 15:17:32,343 INFO dm_ahr_vit :: dmahr iter 400/2000 loss 0.09666 (38s)
+2026-11-12 15:17:40,956 INFO dm_ahr_vit :: dmahr iter 500/2000 loss 0.08746 (47s)
+2026-11-12 15:17:49,472 INFO dm_ahr_vit :: dmahr iter 600/2000 loss 0.08166 (55s)
+2026-11-12 15:17:57,907 INFO dm_ahr_vit :: dmahr iter 700/2000 loss 0.07550 (64s)
+2026-11-12 15:18:06,753 INFO dm_ahr_vit :: dmahr iter 800/2000 loss 0.07095 (72s)
+2026-11-12 15:18:15,132 INFO dm_ahr_vit :: dmahr iter 900/2000 loss 0.29707 (81s)
+2026-11-12 15:18:23,644 INFO dm_ahr_vit :: dmahr iter 1000/2000 loss 0.06593 (89s)
+2026-11-12 15:18:23,893 INFO dm_ahr_vit :: dmahr val iter 1000: 0.06271
+2026-11-12 15:18:36,186 INFO dm_ahr_vit :: dmahr iter 1100/2000 loss 0.20533 (102s)
+2026-11-12 15:18:44,733 INFO dm_ahr_vit :: dmahr iter 1200/2000 loss 0.11793 (110s)
+2026-11-12 15:18:53,391 INFO dm_ahr_vit :: dmahr iter 1300/2000 loss 0.16307 (119s)
+2026-11-12 15:19:02,030 INFO dm_ahr_vit :: dmahr iter 1400/2000 loss 0.04872 (128s)
+2026-11-12 15:19:11,395 INFO dm_ahr_vit :: dmahr iter 1500/2000 loss 0.04663 (137s)
+2026-11-12 15:19:21,798 INFO dm_ahr_vit :: dmahr iter 1600/2000 loss 0.08626 (147s)
+2026-11-12 15:19:30,336 INFO dm_ahr_vit :: dmahr iter 1700/2000 loss 0.06755 (156s)
+2026-11-12 15:19:39,461 INFO dm_ahr_vit :: dmahr iter 1800/2000 loss 0.04119 (165s)
+2026-11-12 15:19:50,443 INFO dm_ahr_vit :: dmahr iter 1900/2000 loss 0.05159 (176s)
+2026-11-12 15:19:59,572 INFO dm_ahr_vit :: dmahr iter 2000/2000 loss 0.04012 (185s)
+2026-11-12 15:19:59,819 INFO dm_ahr_vit :: dmahr val iter 2000: 0.03931
+loaded DM-AHR checkpoint /__modal/volumes/vo-Yfgbqu0raQMBZb7syrtU35/artifacts/checkpoints/dmahr_overfit_v2/final_gen.pth (strict)
+
+{
+ "mean_psnr": 14.537796437584412,
+ "hairy_psnr": 21.849982683703505,
+ "margin_db": -7.312186246119094,
+ "required_margin_db": 3.0,
+ "passed": false,
+ "iterations": 2000,
+ "n_pairs": 8,
+ "steps": 1000,
+ "mean_ssim": 0.287389034074619,
+ "hairy_ssim": 0.525527969376908
+}
+{
+ "branch": {
+  "branch": null,
+  "status": "NOT RUN",
+  "missing": [
+   "noise-prediction MSE",
+   "checkpoint trend",
+   "warm start"
+  ]
+ },
+ "inputs_present": {
+  "mse": false,
+  "score": false,
+  "warm_start": false,
+  "overfit": true
+ },
+ "static_audit": {
+  "ema": "upstream marks EMA 'not used now'; no EMA code upstream or in our trainer",
+  "ema_bug_branch_a": "ruled out by audit (no EMA weights exist)"
+ },
+ "validity_of_fixed_arm": null,
+ "step_sweep_choice": null
+}
+EXIT 0 in 240.3s
+Stopping app - local entrypoint completed.
+✓ App completed. View run at 
+https://modal.com/apps/ncip85613/main/ap-jvHYqoDQw9xy0XbM1uiXCO
+exit=0
