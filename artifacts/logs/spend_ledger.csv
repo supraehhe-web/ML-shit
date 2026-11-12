@@ -1,4 +1,17 @@
-timestamp,job,gpu,seconds,usd_estimate,arm,seed,stage,images
-2026-11-12T14:45:56+00:00,paper_reproduction,A100-40GB,5.9,0.0034,,,,
-2026-11-12T15:14:00+00:00,paper_reproduction,A100-40GB,1039.6,0.6061,,,,
-2026-11-12T15:20:41+00:00,arm_c_diagnose_v2,A100-40GB,233.27,0.136,,,overfit,
+job,gpu,exit_code,seconds,usd_estimate,basis
+p1_paper_reproduction_128,A100-40GB,0,1052.5,0.614,container wall-clock (EXIT line)
+p1_smoke,A100-40GB,0,18.2,0.011,container wall-clock (EXIT line)
+p1b_paper_reproduction_256,A100-40GB,0,1113.0,0.649,container wall-clock (EXIT line)
+p1c_fp32_control,A100-40GB,0,136.7,0.08,container wall-clock (EXIT line)
+p2_noise_mse,A100-40GB,0,20.8,0.012,container wall-clock (EXIT line)
+p2_overfit,A100-40GB,0,240.3,0.14,container wall-clock (EXIT line)
+p2_respaced_validation,A100-40GB,-2,0.0,0.0,"no EXIT line: unfinished or failed, not counted"
+p2_score_snapshots,A100-40GB,-2,0.0,0.0,"no EXIT line: unfinished or failed, not counted"
+p2_step_sweep,A100-40GB,0,429.8,0.251,container wall-clock (EXIT line)
+p2_warm_start,A100-40GB,0,161.9,0.094,container wall-clock (EXIT line)
+retrain_first_attempt_stopped,A100-40GB,-1,500.0,0.292,"ESTIMATE: stopped by the operator after about 8 min because the per-iteration speed was 0.095 s; wall-clock read from log timestamps (container start about 14:47:30, stop about 14:55:50)"
+retrain_fixed_20000,A100-40GB,0,1370.5,0.799,container wall-clock (EXIT line)
+xai_v2_A,A100-40GB,0,459.9,0.268,container wall-clock (EXIT line)
+xai_v2_Astar,A100-40GB,-2,0.0,0.0,"no EXIT line: unfinished or failed, not counted"
+xai_v2_B,A100-40GB,-2,0.0,0.0,"no EXIT line: unfinished or failed, not counted"
+xai_v2_C,A100-40GB,0,556.0,0.324,container wall-clock (EXIT line)
