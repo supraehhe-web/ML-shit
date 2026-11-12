@@ -1,0 +1,6 @@
+{
+  "retrain_first_attempt_stopped": {
+    "seconds": 500,
+    "why": "stopped by the operator after about 8 min because the per-iteration speed was 0.095 s; wall-clock read from log timestamps (container start about 14:47:30, stop about 14:55:50)"
+  }
+}

@@ -1,0 +1,69 @@
+✓ Initialized. View run at 
+https://modal.com/apps/ncip85613/main/ap-6261ichigY6w3rdMBNXhEl
+✓ Created objects.
+RUN /usr/local/bin/python /root/proj/scripts/22_arm_c_diagnose_v2.py --stage mse --pairs-n 100 --score-n 50 --steps 1000 --bf16 --gpu A100-40GB --budget-usd 0.4
+{"label": "arm_c_diagnose_v2:mse", "units": 1, "seconds_per_unit": 90.0, "gpu": "A100-40GB", "estimated_seconds": 90.0, "estimated_usd": 0.05, "budget_usd": 0.4, "price_source": "reports/compute_plan.md (modal.com/pricing, read 2026-11-11)"}
+loaded DM-AHR checkpoint /__modal/volumes/vo-Yfgbqu0raQMBZb7syrtU35/data/raw/dmahr_weights/I725000_E1083_gen.pth (strict)
+loaded DM-AHR checkpoint /__modal/volumes/vo-Yfgbqu0raQMBZb7syrtU35/artifacts/checkpoints/dmahr/best_gen.pth (strict)
+loaded DM-AHR checkpoint /__modal/volumes/vo-Yfgbqu0raQMBZb7syrtU35/artifacts/checkpoints/dmahr_fixed/final_gen.pth (strict)
+{
+ "mean_mse": {
+  "released": {
+   "upstream": 0.004468899818562022,
+   "legacy": 0.04955358548977529
+  },
+  "ours": {
+   "upstream": 0.0421663648012327,
+   "legacy": 0.00077914196299389
+  },
+  "ours_fixed": {
+   "upstream": 0.0007715740548519534,
+   "legacy": 0.04137125361557992
+  }
+ },
+ "evidence": {
+  "ours_upstream_over_legacy": 54.1189754935114,
+  "released_legacy_over_upstream": 11.08854248286111,
+  "threshold": 1.5,
+  "trained_wrongly_evidence": true
+ }
+}
+{
+ "branch": {
+  "branch": null,
+  "status": "NOT RUN",
+  "missing": [
+   "checkpoint trend"
+  ]
+ },
+ "inputs_present": {
+  "mse": true,
+  "score": false,
+  "warm_start": true,
+  "overfit": true
+ },
+ "static_audit": {
+  "ema": "upstream marks EMA 'not used now'; no EMA code upstream or in our trainer",
+  "ema_bug_branch_a": "ruled out by audit (no EMA weights exist)"
+ },
+ "validity_of_fixed_arm": null,
+ "step_sweep_choice": {
+  "chosen_steps": 2000,
+  "reference_psnr": 26.414841345288675,
+  "reference_steps": 2000,
+  "tolerance_db": 1.0,
+  "valid": {
+   "hairy_psnr": 22.342935332025622,
+   "hairy_ssim": 0.5311920134481177,
+   "psnr": 26.414841345288675,
+   "rule": "PSNR >= hairy + 3.0 dB and SSIM > hairy SSIM (validation pairs)",
+   "ssim": 0.6815611278848265,
+   "valid": true
+  }
+ }
+}
+EXIT 0 in 20.8s
+Stopping app - local entrypoint completed.
+✓ App completed. View run at 
+https://modal.com/apps/ncip85613/main/ap-6261ichigY6w3rdMBNXhEl
+exit=0
