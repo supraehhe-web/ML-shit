@@ -112,3 +112,41 @@ def wilcoxon_group_paired(df: pd.DataFrame, value: str, arm_col: str,
         "median_difference": float((wide[arms[0]] - wide[arms[1]]).median()),
     }
 
+
+def wilcoxon_per_group(long_df: pd.DataFrame, arm_a: str, arm_b: str,
+                       value_col: str = "value",
+                       group_col: str = "group_id") -> dict:
+    """Wilcoxon signed-rank on lesion-group-level paired values.
+
+    `long_df` carries one row per (arm, group). Collapsing to a single value per
+    lesion first keeps the many images of one lesion from being treated as
+    independent replicates.
+    """
+    from scipy.stats import wilcoxon
+
+    out = {"wilcoxon_n_groups": 0, "wilcoxon_statistic": float("nan"),
+           "wilcoxon_p_raw": float("nan")}
+    if long_df is None or long_df.empty:
+        return out
+    sub = long_df[long_df["arm"].isin([arm_a, arm_b])]
+    if sub.empty:
+        return out
+    wide = sub.pivot_table(index=group_col, columns="arm",
+                           values=value_col, aggfunc="mean").dropna()
+    out["wilcoxon_n_groups"] = int(len(wide))
+    if wide.shape[1] != 2 or len(wide) < 6:
+        return out
+    a = wide[arm_a].to_numpy(dtype=float)
+    b = wide[arm_b].to_numpy(dtype=float)
+    if np.allclose(a - b, 0.0):
+        out["wilcoxon_statistic"] = 0.0
+        out["wilcoxon_p_raw"] = 1.0
+        return out
+    try:
+        res = wilcoxon(a, b)
+    except ValueError:
+        return out
+    out["wilcoxon_statistic"] = float(res.statistic)
+    out["wilcoxon_p_raw"] = float(res.pvalue)
+    return out
+

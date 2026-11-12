@@ -17,11 +17,55 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from dm_ahr_vit.config import CLASSES, load_config, save_json  # noqa: E402
 from dm_ahr_vit.paths import artifact_dir  # noqa: E402
-from dm_ahr_vit.stats.bootstrap import holm  # noqa: E402
+from dm_ahr_vit.stats.bootstrap import holm, wilcoxon_per_group  # noqa: E402
 from dm_ahr_vit.utils import record_run, setup_logging, timed  # noqa: E402
 
 log = setup_logging()
 ARMS = ["A", "B", "C", "Astar"]
+
+
+def _long_from_labels(df: pd.DataFrame, pairs: list) -> pd.DataFrame:
+    """Long (arm, group, value) frame from same-row columns given as (col, label)."""
+    frames = []
+    for col, label in pairs:
+        if col not in df.columns:
+            continue
+        g = df.dropna(subset=["group_id", col]).groupby("group_id")[col].mean()
+        frames.append(pd.DataFrame({"arm": label, "group_id": g.index,
+                                    "value": g.to_numpy(dtype=float)}))
+    return pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
+
+
+def _long_from_arm(df: pd.DataFrame, value_col: str, arm_col: str) -> pd.DataFrame:
+    """Long (arm, group, value) frame from a tidy per-image table."""
+    g = (df.dropna(subset=["group_id", value_col])
+         .groupby([arm_col, "group_id"])[value_col].mean().reset_index())
+    return g.rename(columns={arm_col: "arm", value_col: "value"})
+
+
+def attach_wilcoxon(rows: list, long_df: pd.DataFrame, comparisons: list) -> list:
+    """Attach group-aggregated Wilcoxon results, Holm-corrected within the family.
+
+    The proposal asks for a Wilcoxon signed-rank test beside the bootstrap CI.
+    Values are collapsed to one per lesion group before testing.
+    """
+    if not rows or long_df is None or long_df.empty:
+        return rows
+    res, pvals = {}, []
+    for a, b in comparisons:
+        r = wilcoxon_per_group(long_df, a, b)
+        res[f"{a}-{b}"] = r
+        pvals.append(r["wilcoxon_p_raw"])
+    adj = holm(pvals)
+    keys = list(res)
+    for row in rows:
+        r = res.get(row["comparison"])
+        if r is None:
+            continue
+        row.update(r)
+        row["wilcoxon_p_holm"] = adj[keys.index(row["comparison"])]
+        row["wilcoxon_test"] = "wilcoxon_signed_rank_group_aggregated"
+    return rows
 
 
 def load_predictions(arm: str, subset: str, seeds: list[int]):
@@ -133,8 +177,10 @@ def classification_endpoint(seeds: list[int], subset: str, reps: int, bseed: int
 
     dists, observed = {}, {}
     per_group_f1: dict[str, np.ndarray] = {}
+    correct_long: list[dict] = []
     for arm in available:
         per_seed, seed_scores = [], []
+        correct_tables = []
         for seed in seeds:
             sub = preds[arm][(preds[arm]["seed"] == seed)
                              & (preds[arm]["image_id"].isin(common))]
@@ -145,6 +191,8 @@ def classification_endpoint(seeds: list[int], subset: str, reps: int, bseed: int
             seed_scores.append(float(macro_f1_from_counts(
                 counts["tp"].sum(0)[None], counts["fp"].sum(0)[None],
                 counts["fn"].sum(0)[None])[0]))
+            correct = (sub["label"] == sub["pred"]).astype(float)
+            correct_tables.append(correct.groupby(sub["group_id"]).mean())
         if not per_seed:
             continue
         dists[arm] = bootstrap_arm_scores(per_seed, W)
@@ -154,6 +202,10 @@ def classification_endpoint(seeds: list[int], subset: str, reps: int, bseed: int
             [macro_f1_from_counts(c["tp"], c["fp"], c["fn"]) for c in per_seed],
             axis=0,
         )
+        if correct_tables:
+            avg = pd.concat(correct_tables, axis=1).mean(axis=1)
+            correct_long.extend({"arm": arm, "group_id": g, "value": float(v)}
+                                for g, v in avg.items())
 
     rows = []
     for a, b in comparisons:
@@ -174,9 +226,9 @@ def classification_endpoint(seeds: list[int], subset: str, reps: int, bseed: int
             "n_groups": len(groups),
             "replicates": reps,
             **compare(dists[a], dists[b], paired_diffs=diffs),
-            "wilcoxon_p_raw": float("nan"),
             "test": "lesion-group paired bootstrap, percentile CI, two-sided",
         })
+    rows = attach_wilcoxon(rows, pd.DataFrame(correct_long), comparisons)
     save_json(
         {"subset": subset, "observed_macro_f1": observed,
          "arms": available, "n_images": len(common), "n_groups": len(groups)},
@@ -242,10 +294,12 @@ def paired_column_endpoint(df: pd.DataFrame, col_a: str, col_b: str, endpoint: s
                 "n_images": int(df[df[arm_col] == x].shape[0]),
                 "n_groups": len(groups), "replicates": reps,
                 **compare(stats_by_arm["dists"][x], stats_by_arm["dists"][y]),
-                "wilcoxon_p_raw": float("nan"),
                 "test": "lesion-group paired bootstrap, percentile CI, two-sided",
             })
-        return rows
+        return attach_wilcoxon(
+            rows, _long_from_arm(df, col_a, arm_col),
+            [c for c in comparisons if c[0] in stats_by_arm["dists"]
+             and c[1] in stats_by_arm["dists"]])
 
     gi = df["group_id"].map(gidx).to_numpy()
     a = df[col_a].to_numpy(dtype=float)
@@ -266,10 +320,11 @@ def paired_column_endpoint(df: pd.DataFrame, col_a: str, col_b: str, endpoint: s
             "arm_a_mean": float(a.mean()), "arm_b_mean": float(b.mean()),
             "n_images": int(len(df)), "n_groups": len(groups),
             "replicates": reps, **compare(da, db, paired_diffs=observed_diffs),
-            "wilcoxon_p_raw": float("nan"),
             "test": "lesion-group paired bootstrap, percentile CI, two-sided",
         })
-    return rows
+    label_pairs = [(col_a, comparisons[0][0]), (col_b, comparisons[0][1])] \
+        if comparisons else [(col_a, col_a), (col_b, col_b)]
+    return attach_wilcoxon(rows, _long_from_labels(df, label_pairs), comparisons)
 
 
 def xai_rows(metric: str, reps: int, bseed: int, comparisons: list) -> list:
@@ -298,10 +353,9 @@ def xai_rows(metric: str, reps: int, bseed: int, comparisons: list) -> list:
             "n_images": int((df["arm"] == a).sum()),
             "n_groups": len(groups), "replicates": reps,
             **compare(res["dists"][a], res["dists"][b]),
-            "wilcoxon_p_raw": float("nan"),
             "test": "lesion-group paired bootstrap, percentile CI, two-sided",
         })
-    return rows
+    return attach_wilcoxon(rows, _long_from_arm(per_group, metric, "arm"), comparisons)
 
 
 def main() -> int:
@@ -354,7 +408,8 @@ def main() -> int:
         table.loc[grp.index, "p_holm"] = holm(grp["p_raw"].tolist())
     cols = ["endpoint", "subset", "family", "comparison", "arm_a", "arm_b", "arm_a_mean",
             "arm_b_mean", "difference", "ci_low", "ci_high", "p_raw", "p_holm",
-            "effect_size_dz", "n_images", "n_groups", "replicates", "test"]
+            "effect_size_dz", "wilcoxon_p_raw", "wilcoxon_p_holm", "wilcoxon_statistic",
+            "wilcoxon_n_groups", "n_images", "n_groups", "replicates", "test"]
     table = table[[c for c in cols if c in table.columns]]
     table = table.sort_values(["endpoint", "subset", "comparison"])
     table.to_csv(artifact_dir("logs") / "statistical_comparisons.csv", index=False)

@@ -24,3 +24,4 @@
 {"gpu": null, "host": "modal", "inventory": 172, "job": "finalize", "pid": 48798, "python": "3.12.3", "seconds": 0.13, "status": "ok", "timestamp": "2026-11-11T23:24:40+00:00"}
 {"gpu": null, "host": "modal", "inventory": 172, "job": "finalize", "pid": 52648, "python": "3.12.3", "seconds": 0.12, "status": "ok", "timestamp": "2026-11-11T23:25:47+00:00"}
 {"gpu": null, "host": "modal", "inventory": 173, "job": "finalize", "pid": 63337, "python": "3.12.3", "seconds": 0.15, "status": "ok", "timestamp": "2026-11-12T07:18:53+00:00"}
+{"gpu": null, "host": "modal", "job": "stats", "pid": 52583, "python": "3.12.3", "rows": 14, "seconds": 27.98, "status": "ok", "timestamp": "2026-11-12T08:36:52+00:00"}
