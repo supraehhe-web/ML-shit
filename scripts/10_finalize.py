@@ -20,7 +20,7 @@ from dm_ahr_vit.paths import artifact_dir, data_root, manifest_dir  # noqa: E402
 from dm_ahr_vit.utils import record_run, setup_logging, timed  # noqa: E402
 
 log = setup_logging()
-ARMS = ["A", "B", "C", "Astar"]
+ARMS = ["A", "B", "C", "Astar", "Creleased", "Cfixed"]
 ARM_LABEL = {"A": "Original", "B": "DullRazor", "C": "DM-AHR", "Astar": "A* (128 px)"}
 
 

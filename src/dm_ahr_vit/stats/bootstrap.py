@@ -150,3 +150,26 @@ def wilcoxon_per_group(long_df: pd.DataFrame, arm_a: str, arm_b: str,
     out["wilcoxon_p_raw"] = float(res.pvalue)
     return out
 
+
+
+def cluster_mean_ci(values, groups, reps: int = 10000, seed: int = 20260101,
+                    alpha: float = 0.05, null: float = 0.0) -> dict:
+    """Mean of `values` with a lesion-cluster bootstrap percentile CI and two-sided p against `null`.
+
+    Images of one lesion are resampled together (ratio estimator: summed values
+    over summed counts), so multiple images per lesion are not independent draws.
+    """
+    v = np.asarray(values, dtype=float)
+    g = np.asarray(groups)
+    ok = np.isfinite(v)
+    v, g = v[ok], g[ok]
+    uniq, gi = np.unique(g, return_inverse=True)
+    sums = np.bincount(gi, weights=v, minlength=len(uniq))
+    cnts = np.bincount(gi, minlength=len(uniq)).astype(float)
+    rng = np.random.default_rng(seed)
+    draws = rng.integers(0, len(uniq), size=(reps, len(uniq)))
+    dist = sums[draws].sum(axis=1) / cnts[draws].sum(axis=1)
+    lo, hi = np.percentile(dist, [100 * alpha / 2, 100 * (1 - alpha / 2)])
+    p = 2 * min(float((dist <= null).mean()), float((dist >= null).mean()))
+    return {"mean": float(v.mean()), "ci_low": float(lo), "ci_high": float(hi),
+            "p_raw": float(min(1.0, p)), "n": int(v.size), "n_groups": int(len(uniq))}
