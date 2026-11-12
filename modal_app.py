@@ -211,6 +211,15 @@ def dmahr_train(overfit: bool = False):
     return _run("04_dmahr_train.py", ["--overfit"] if overfit else [])
 
 
+# Arm C diagnosis. Runs on validation synthetic pairs only, so no test-set
+# choice depends on it. A100-40GB is the cheapest card measured to run the
+# sampler without becoming the bottleneck.
+@app.function(image=image, gpu="A100-40GB", timeout=3600, volumes={"/vol": vol})
+def arm_c_diagnose(identity_n: int = 50, pairs_n: int = 100):
+    return _run("17_arm_c_diagnose.py",
+                ["--identity-n", str(identity_n), "--pairs-n", str(pairs_n)])
+
+
 @app.function(image=image, gpu="A100-80GB", timeout=86400, volumes={"/vol": vol})
 def dmahr_overfit():
     return _run("04_dmahr_train.py", ["--overfit"])
@@ -472,6 +481,17 @@ drive_image = (
 )
 
 
+# Modal resolves a named secret at app-load time, so referencing one that does
+# not exist aborts every function in this file, not just the Drive upload.
+# The upload is optional, so it is declared only when explicitly enabled:
+#   ENABLE_GDRIVE_UPLOAD=1 modal run modal_app.py::upload_to_drive
+_GDRIVE_SECRET = (
+    modal.Secret.from_name("gdrive-sa")
+    if os.environ.get("ENABLE_GDRIVE_UPLOAD") == "1"
+    else None
+)
+
+
 @app.function(
     image=drive_image,
     cpu=4,
@@ -480,10 +500,14 @@ drive_image = (
     volumes={"/vol": vol},
     # Create this once with the service-account JSON:
     #   modal secret create gdrive-sa GDRIVE_SA_JSON="$(cat sa.json)"
-    secrets=[modal.Secret.from_name("gdrive-sa")],
+    secrets=[_GDRIVE_SECRET] if _GDRIVE_SECRET is not None else [],
 )
 def upload_to_drive(tier: str = "results", dest: str = "dmahr-vit", dry_run: bool = False):
     """Stream volume artifacts to Google Drive (cloud to cloud)."""
+    if _GDRIVE_SECRET is None:
+        raise RuntimeError(
+            "the gdrive-sa secret is not configured; create it with "
+            'modal secret create gdrive-sa GDRIVE_SA_JSON="$(cat sa.json)"')
     args = ["--tier", tier, "--dest", dest]
     if dry_run:
         args.append("--dry-run")
