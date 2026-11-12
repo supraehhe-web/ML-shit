@@ -1,0 +1,103 @@
+✓ Initialized. View run at 
+https://modal.com/apps/ncip85613/main/ap-po0RbZNDZVkKbXQfHJ5nV6
+✓ Created objects.
+RUN /usr/local/bin/python /root/proj/scripts/04_dmahr_train.py --conditioning upstream --tag dmahr_fixed --iterations 20000 --save-every 5000 --gpu A100-40GB --budget-usd 1.0
+{"label": "dmahr_train", "units": 20000, "seconds_per_unit": 0.055, "gpu": "A100-40GB", "estimated_seconds": 1160.0, "estimated_usd": 0.68, "budget_usd": 1.0, "price_source": "reports/compute_plan.md (modal.com/pricing, read 2026-11-11)"}
+2026-11-12 14:49:19,586 INFO dm_ahr_vit :: dmahr iter 100/20000 loss 0.18576 (51s)
+2026-11-12 14:49:53,903 INFO dm_ahr_vit :: dmahr iter 200/20000 loss 0.20489 (86s)
+2026-11-12 14:50:03,836 INFO dm_ahr_vit :: dmahr iter 300/20000 loss 0.13308 (95s)
+2026-11-12 14:50:13,350 INFO dm_ahr_vit :: dmahr iter 400/20000 loss 0.09691 (105s)
+2026-11-12 14:50:22,735 INFO dm_ahr_vit :: dmahr iter 500/20000 loss 0.08542 (114s)
+2026-11-12 14:50:31,446 INFO dm_ahr_vit :: dmahr iter 600/20000 loss 0.08272 (123s)
+2026-11-12 14:50:41,298 INFO dm_ahr_vit :: dmahr iter 700/20000 loss 0.07563 (133s)
+2026-11-12 14:50:50,387 INFO dm_ahr_vit :: dmahr iter 800/20000 loss 0.07120 (142s)
+2026-11-12 14:50:59,868 INFO dm_ahr_vit :: dmahr iter 900/20000 loss 0.29977 (152s)
+2026-11-12 14:51:09,215 INFO dm_ahr_vit :: dmahr iter 1000/20000 loss 0.06422 (161s)
+2026-11-12 14:51:56,441 INFO dm_ahr_vit :: dmahr val iter 1000: 0.06183
+2026-11-12 14:52:10,157 INFO dm_ahr_vit :: dmahr iter 1100/20000 loss 0.21078 (222s)
+2026-11-12 14:52:19,697 INFO dm_ahr_vit :: dmahr iter 1200/20000 loss 0.12333 (231s)
+2026-11-12 14:52:30,103 INFO dm_ahr_vit :: dmahr iter 1300/20000 loss 0.15873 (242s)
+2026-11-12 14:52:40,255 INFO dm_ahr_vit :: dmahr iter 1400/20000 loss 0.04933 (252s)
+2026-11-12 14:52:49,579 INFO dm_ahr_vit :: dmahr iter 1500/20000 loss 0.04668 (261s)
+2026-11-12 14:52:58,559 INFO dm_ahr_vit :: dmahr iter 1600/20000 loss 0.08589 (270s)
+2026-11-12 14:53:08,053 INFO dm_ahr_vit :: dmahr iter 1700/20000 loss 0.06153 (280s)
+2026-11-12 14:53:17,419 INFO dm_ahr_vit :: dmahr iter 1800/20000 loss 0.06294 (289s)
+2026-11-12 14:53:26,011 INFO dm_ahr_vit :: dmahr iter 1900/20000 loss 0.05190 (298s)
+2026-11-12 14:53:35,405 INFO dm_ahr_vit :: dmahr iter 2000/20000 loss 0.04158 (307s)
+2026-11-12 14:53:41,496 INFO dm_ahr_vit :: dmahr val iter 2000: 0.03971
+2026-11-12 14:53:54,591 INFO dm_ahr_vit :: dmahr iter 2100/20000 loss 0.04689 (326s)
+Stopping app - user stopped from CLI.
+2026-11-12 14:54:04,694 INFO dm_ahr_vit :: dmahr iter 2200/20000 loss 0.03616 (336s)
+Runner terminated.
+╭───────────────────── Traceback (most recent call last) ──────────────────────╮
+│ /root/.venvs/dmahr/bin/modal:6 in <module>                                   │
+│                                                                              │
+│   5 │   sys.argv[0] = sys.argv[0].removesuffix('.exe')                       │
+│ ❱ 6 │   sys.exit(main())                                                     │
+│   7                                                                          │
+│                                                                              │
+│ /root/.venvs/dmahr/lib/python3.12/site-packages/modal/__main__.py:20 in main │
+│                                                                              │
+│   19 │   │   try:                                                            │
+│ ❱ 20 │   │   │   entrypoint_cli()                                            │
+│   21                                                                         │
+│                                                                              │
+│ /root/.venvs/dmahr/lib/python3.12/site-packages/click/core.py:1653 in        │
+│ __call__                                                                     │
+│                                                                              │
+│ /root/.venvs/dmahr/lib/python3.12/site-packages/click/core.py:1560 in main   │
+│                                                                              │
+│ /root/.venvs/dmahr/lib/python3.12/site-packages/click/core.py:2054 in invoke │
+│                                                                              │
+│ /root/.venvs/dmahr/lib/python3.12/site-packages/click/core.py:2054 in invoke │
+│                                                                              │
+│ /root/.venvs/dmahr/lib/python3.12/site-packages/click/core.py:1414 in invoke │
+│                                                                              │
+│ /root/.venvs/dmahr/lib/python3.12/site-packages/click/core.py:911 in invoke  │
+│                                                                              │
+│ /root/.venvs/dmahr/lib/python3.12/site-packages/click/decorators.py:34 in    │
+│ new_func                                                                     │
+│                                                                              │
+│ /root/.venvs/dmahr/lib/python3.12/site-packages/modal/cli/run.py:248 in f    │
+│                                                                              │
+│   247 │   │   ):                                                             │
+│ ❱ 248 │   │   │   res = inner(args, kwargs)                                  │
+│   249                                                                        │
+│                                                                              │
+│ /root/.venvs/dmahr/lib/python3.12/site-packages/modal/cli/run.py:277 in      │
+│ _inner                                                                       │
+│                                                                              │
+│   276 │   │   if ctx.obj["detach"]:                                          │
+│ ❱ 277 │   │   │   return function.spawn(*args, **click_kwargs).get()         │
+│   278 │   │   else:                                                          │
+│                                                                              │
+│ /root/.venvs/dmahr/lib/python3.12/site-packages/modal/_object.py:49 in       │
+│ wrapped                                                                      │
+│                                                                              │
+│    48 │   │   await self.hydrate()                                           │
+│ ❱  49 │   │   return await method(self, *args, **kwargs)                     │
+│    50                                                                        │
+│                                                                              │
+│ /root/.venvs/dmahr/lib/python3.12/site-packages/modal/_functions.py:2424 in  │
+│ get                                                                          │
+│                                                                              │
+│   2423 │   │   """                                                           │
+│ ❱ 2424 │   │   return await self._invocation().poll_function(timeout=timeout │
+│   2425                                                                       │
+│                                                                              │
+│ /root/.venvs/dmahr/lib/python3.12/site-packages/modal/_functions.py:350 in   │
+│ poll_function                                                                │
+│                                                                              │
+│    349 │   │                                                                 │
+│ ❱  350 │   │   return await _process_result(                                 │
+│    351 │   │   │   response.outputs[0].result, response.outputs[0].data_form │
+│                                                                              │
+│ /root/.venvs/dmahr/lib/python3.12/site-packages/modal/_utils/function_utils. │
+│ py:574 in _process_result                                                    │
+│                                                                              │
+│   573 │   │                                                                  │
+│ ❱ 574 │   │   raise RemoteError(result.exception)                            │
+│   575                                                                        │
+╰──────────────────────────────────────────────────────────────────────────────╯
+RemoteError
+exit=1
