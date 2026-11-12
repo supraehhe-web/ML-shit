@@ -355,3 +355,61 @@ own release disagree.
 estimate was ~$7.35 (decision D19). No Modal job in this revision has been run.
 Every new Modal entry point requires an explicit `--budget-usd` and aborts if
 its own estimate exceeds it.
+
+## D23 - Modal budget, job plan and two pre-registered additions (before any job ran)
+
+Written and committed before any Modal job of this revision. Frozen split hash
+unchanged: `fda56cf3c555e6d22f823510670e1392cd9b1b27778a50a831e68f1dd8d5be2b`.
+
+### Budget (`BUDGET_USD`)
+The owner stated a Modal limit of $30 with about $7 of balance available on
+2026-11-12 14:41 UTC, and asked that Modal be used for small jobs, not long
+training. Cap for this revision: **$5.50 of estimated spend**, leaving at least
+$1.50 unspent. Every job calls `dm_ahr_vit.budget.gate` with a throughput
+re-measured on 20 images and aborts if its estimate exceeds its `--budget-usd`.
+Spend is estimated from wall-clock seconds and the per-hour prices in
+`reports/compute_plan.md` (A100-40GB $2.0988/h); these are estimates, not
+invoices. The per-job ledger is `artifacts/logs/spend_ledger.csv`.
+
+| Job | Estimate | Rule for running it |
+|---|---|---|
+| P1 paper reproduction, vendored DERMAHAIR akiec subset, 128 px, 2,000 and 1,000 steps | ~$0.7 | always |
+| P1b same at native 256 px, 50 pairs, 2,000 steps | ~$0.4 | only if the 128 px rule fails |
+| Fixed-trainer retrain, 20,000 iterations, snapshots every 5,000 | ~$0.65 | always (this is the paper's stated iteration count) |
+| Noise-prediction MSE, 2x2 | ~$0.1 | always |
+| Warm-start (500 iterations x 2 trainers) and overfit (8 pairs) | ~$0.35 | always |
+| Step-count sweep of the released checkpoint, validation pairs | ~$0.15 | always |
+| Score every snapshot, validation pairs, noise-versus-blur | ~$0.4 | after the retrain finishes |
+| XAI v2, aligned masks: 12 runs, plus shift and faithfulness on seed 42 only | ~$1.3 | always |
+| C-released over 8,993 hair-present images | see sweep rule | only if the estimate fits the remaining cap |
+
+No long diffusion training is run. The 20,000-iteration retrain takes about 12
+minutes; the 725,000-iteration schedule of the release is not attempted.
+
+### Pre-registered addition 1: step-count rule for C-released
+On 50 validation pairs, the released checkpoint is sampled at 50, 100, 250, 500,
+1,000 and 2,000 steps. The chosen step count is the smallest S for which mean
+PSNR >= PSNR(2,000) - 1.0 dB **and** the valid-arm rule of D22 holds
+(PSNR >= hairy + 3 dB and SSIM > hairy SSIM). The throughput of 20 images is
+re-measured at S, and the job is launched only if the estimate is at most the
+remaining cap minus the $1.50 reserve. Otherwise C-released is recorded as
+**not run**, with its estimated cost, and H1/H2 stay untested. This decision uses
+validation pairs only.
+
+### Pre-registered addition 2: saliency geometry (a code-correctness fix)
+The first XAI run compared a saliency map in model-input space (shorter side
+resized to 255, centre-cropped to 224; A* and C inputs are 128 px stretched
+copies) with a lesion mask simply stretched to 224 x 224. Those geometries
+differ and differ by arm. The fix is determined by reading
+`data/dataset.py::build_transforms`, not by any arm's score: the mask is
+passed through the same geometry as the image the model sees
+(`dm_ahr_vit.xai.geometry.model_space`). Disclosure: while auditing masks I
+computed geometry-only baselines (centred-Gaussian, pointing chance, ceiling,
+centroids) from the test masks; no arm's saliency was looked at. XAI v2 scores
+every arm against the aligned mask. The v1 (stretched) CSVs are kept and
+reported as the legacy, misaligned measurement.
+
+### Pre-registered addition 3: step-count and sampling for the diagnostic score stage
+Validation pairs only, 1,000 sampling steps, bf16, 50 pairs, seed index equal to
+the batch start, exactly as in `scripts/17_arm_c_diagnose.py` so the numbers are
+comparable with D19.

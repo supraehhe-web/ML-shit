@@ -15,6 +15,7 @@ from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
+from dm_ahr_vit.budget import gate  # noqa: E402
 from dm_ahr_vit.config import load_config, save_json  # noqa: E402
 from dm_ahr_vit.diffusion.dmahr_adapter import clean_batch, load_model  # noqa: E402
 from dm_ahr_vit.paths import artifact_dir, isic_images_dir, manifest_dir, processed_dir  # noqa: E402
@@ -33,6 +34,13 @@ def main() -> int:
                     help="process synthetic pairs for this split instead of real hair-present images")
     ap.add_argument("--bf16", action="store_true",
                     help="bf16 autocast; ~2x faster, verified against fp32 in the smoke test")
+    ap.add_argument("--out-arm", default="C",
+                    help="processed/<arm> output directory: C, Creleased or Cfixed")
+    ap.add_argument("--gpu", default="A100-80GB")
+    ap.add_argument("--budget-usd", type=float, default=None,
+                    help="total budget for the whole sampling job across shards; required for real images")
+    ap.add_argument("--bench-n", type=int, default=20)
+    ap.add_argument("--limit", type=int, default=None, help="process at most this many images (smoke/bench)")
     args = ap.parse_args()
     cfg = load_config("configs/dmahr.json")
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -60,12 +68,24 @@ def main() -> int:
             "image_id": todo["image_id"].values,
             "source_path": [str(isic_images_dir() / f"{i}.jpg") for i in todo["image_id"]],
         })
-        out_dir = processed_dir("C")
+        out_dir = processed_dir(args.out_arm)
     out_dir.mkdir(parents=True, exist_ok=True)
     todo = todo[~todo["image_id"].map(lambda i: (out_dir / f"{i}.png").exists())]
+    if args.limit:
+        todo = todo.head(args.limit)
     log.info("shard %d/%d: %d images to process", args.shard, args.n_shards, len(todo))
 
     net = load_model(cfg, ckpt, device=device)
+    if not args.pairs_split and len(todo):
+        # Re-measure throughput on a few images, then refuse to run over budget.
+        steps_run = int(args.num_timesteps or cfg["num_timesteps"])
+        probe = [Image.open(p).convert("RGB") for p in todo["source_path"].head(args.bench_n)]
+        tb = time.time()
+        clean_batch(net, probe, cfg, device=device, seed=0, num_timesteps=100, use_bf16=args.bf16)
+        torch.cuda.synchronize()
+        per_step = (time.time() - tb) / (len(probe) * 100)
+        gate(f"sample_{args.out_arm}", len(todo) * args.n_shards, per_step * steps_run, args.gpu,
+             args.budget_usd)
     bs = int(cfg["sampling"]["batch_size"])
     rows = []
     t0 = time.time()
