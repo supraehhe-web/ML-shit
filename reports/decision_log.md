@@ -240,3 +240,118 @@ Authority order applied: `AGENTS.md` > `docs/ACCEPTANCE_CRITERIA.md` > `docs/DEV
   first test scoring must be recorded as void in the report rather than
   presented as an independent second look.
 
+
+## D22 - Pre-registration for the post-review revision (written before any new result)
+
+Written and committed before any of the new analyses or Modal jobs below were
+run or looked at. Frozen split hash at the start of this revision:
+`fda56cf3c555e6d22f823510670e1392cd9b1b27778a50a831e68f1dd8d5be2b`
+(`data/manifests/splits.sha256`, re-verified against `splits.csv`).
+No test image, label, mask or metric is used to choose any threshold, iteration
+count or sampling setting below.
+
+Source facts supplied by the project owner (cited as the DM-AHR paper, Cancers
+2024, 16, 2947; not independently re-verified in this repository): PSNR ~41.04
+dB, SSIM ~0.966, LPIPS ~0.0128 (with self-supervision); ~39.13 dB / ~0.958
+without; no hairy-input floor reported; 2,000 time steps, 20,000 iterations,
+Adam lr 1e-4; test set = 700 HAM10000 images (100 per class) = DERMAHAIR, the
+rest of HAM10000 used for training. The repository config says `n_iter` 660,000
+and the released checkpoint is `I725000_E1083`, so the paper's text and its
+own release disagree.
+
+### Phase 1 - paper reproduction (released checkpoint, Kaggle DERMAHAIR pairs)
+- Primary comparison: our adapter, native resolution 128, 2,000 steps, mean PSNR
+  over the evaluated pairs against the hairless reference.
+- **Rule:** mean PSNR >= 39.04 dB (within 2 dB of 41.04) -> "adapter validated";
+  the gap to our 26.80 dB on our own synthetic pairs is then attributed to a
+  harder hair domain. Anything lower -> "paper numbers not reproduced" and the
+  adapter and checkpoint loading are investigated (resolution, conditioning
+  image, value range, noise schedule, weight loading). "Adapter sound" is not
+  concluded without passing this rule.
+- Secondary diagnostic (not part of the rule): the same pairs at the data's
+  native 256 px, because the vendored DERMAHAIR sample is 256 px while the
+  config says 128. Pairs: first 100 after sorting file names, 50 for the
+  identity test; steps 2,000 and 1,000. Metrics: PSNR, SSIM, LPIPS (AlexNet).
+- Hairless references may contain natural hair; this is reported, not removed.
+
+### Phase 2 - undertrained versus trained wrongly (our checkpoint)
+- EMA: audited statically (upstream config marks it "not used now"; no EMA code
+  exists upstream or in our trainer). A sampling-weights/EMA bug is ruled out by
+  that audit; the raw-versus-EMA sampling comparison is recorded as not
+  applicable rather than run.
+- Static audit result recorded before any experiment: our trainer fed the
+  denoiser `t / T`, whereas upstream trains and samples with the continuous
+  noise level `sqrt(alphas_cumprod_prev)`. This is a candidate trainer bug and
+  is tested, not assumed, by the experiments below.
+- Noise-prediction MSE on validation pairs, 2x2 (released/ours x upstream
+  conditioning / legacy `t/T` conditioning), timesteps {200, 800, 1400, 1900},
+  100 validation pairs. **Trained-wrongly evidence:** ours has lower MSE under
+  legacy conditioning than under upstream conditioning by a factor >= 1.5 while
+  the released checkpoint shows the reverse.
+- Checkpoints at 5k/10k/15k/20k (fixed trainer, cheap retrain), validation
+  PSNR at 1,000 steps on 50 pairs. **Undertrained:** PSNR(20k) - PSNR(5k) >=
+  1.0 dB and no successive drop > 0.5 dB. Otherwise "flat or erratic".
+- Warm start: fine-tune the released checkpoint with our trainer for 500
+  iterations (batch 4, lr 1e-4), legacy and fixed variants. **Loss jump:** mean
+  L1 over the last 100 iterations > 1.5x the pre-fine-tune validation L1 under
+  the matching conditioning. A jump in the legacy variant but not the fixed one
+  confirms a trainer bug.
+- Overfit: 8 training pairs, 2,000 iterations, 1,000-step sampling of those same
+  pairs. **Pass:** mean PSNR to reference >= hairy-input PSNR + 3 dB.
+- Branch taken is written to `reports/arm_c_diagnosis_v2.md` from the artifact,
+  with branches (a) EMA bug, (b) undertrained, (c) trainer bug exactly as
+  specified. Retrain scale if (c): 20,000 iterations (the paper's stated
+  count), batch 4, lr 1e-4, saves every 5,000.
+- Noise versus blur: high-frequency energy (mean absolute Laplacian), noise
+  sigma by median-absolute-deviation in flat patches, and radial power spectra
+  for hairy input, hairless reference and output; ratios stated against the
+  hairy input as well as the reference.
+
+### Phase 3 / 4 - arms and validity
+- **Valid DM-AHR arm:** mean PSNR >= hairy-input PSNR + 3 dB and SSIM above the
+  hairy-input SSIM on the *validation* synthetic pairs. This gate is applied
+  before any test result for that arm is read.
+- `C-released`: released checkpoint, hair-present gating rule identical to Arm
+  C, hair-absent images pass through unchanged (as in every arm). Exploratory
+  only; the checkpoint very likely saw our validation and test clean images.
+- `C-fixed`: our checkpoint retrained with the fixed trainer; the confirmatory
+  DM-AHR arm only if it passes the validity gate.
+- Holm family stays m = 3 (A-B, A-C*, B-C*, with C* = C-fixed). If C-fixed is
+  absent or invalid, the two C* comparisons are reported as untested and A-B
+  keeps its m = 3 correction (conservative, and the family is not changed after
+  seeing results). The legacy Arm C is moved to an appendix family.
+- Sampling steps for any regenerated arm are set by the budget gate, not by the
+  result: every Modal job re-measures throughput on 20 images, estimates cost,
+  and refuses to start above the supplied `--budget-usd`.
+
+### Phase 5 - saliency
+- Overlap = mask recall |top-20% intersect mask| / |mask|; chance = 0.2 exactly.
+  Pointing chance = probability a random argmax lands on the lesion = mean
+  mask area (measured, not assumed 0.2). Ceiling = min(1, 0.2 / area).
+- Off-centre robustness: translate image and mask by U(-30%, +30%) per axis
+  (seeded by image id, reflect-padded image, zero-padded mask); images whose
+  lesion loses more than 50% of its area are excluded and counted.
+- **H3 uninformative** if the centred-Gaussian prior scores >= every arm on a
+  metric on the unshifted test set AND at least 75% of lesion masks contain
+  the image centre. The shifted analysis is reported either way.
+
+### Phase 6 / 7 - coverage reanalysis and wording
+- Pooled model: per-image correctness (mean over seeds) ~ arm x coverage,
+  fractional-response logit, lesion-clustered sandwich standard errors,
+  image-level coverage; sensitivity with group-mean coverage. Per-decile
+  balanced accuracy with lesion-cluster bootstrap CIs replaces per-decile
+  macro-F1.
+- Hair-absent images (coverage below the frozen screening threshold) are
+  pass-through in Arms B, C and A*, so that decile is an internal control for
+  training-set composition rather than for hair removal.
+- A-B macro-F1 is worded as "clear; magnitude +0.019 to +0.087", not
+  "negligible". Cohen's dz is not defined for macro-F1 (non-decomposable over
+  lesions) and is dropped there; it is kept only for per-pair quantities.
+- Duplicates: "no unlinked near-duplicates found at the stated pixel
+  thresholds".
+
+### Budget
+`BUDGET_USD` was left unfilled by the owner. The last recorded balance
+estimate was ~$7.35 (decision D19). No Modal job in this revision has been run.
+Every new Modal entry point requires an explicit `--budget-usd` and aborts if
+its own estimate exceeds it.
