@@ -21,7 +21,7 @@ from dm_ahr_vit.stats.bootstrap import holm, wilcoxon_per_group  # noqa: E402
 from dm_ahr_vit.utils import record_run, setup_logging, timed  # noqa: E402
 
 log = setup_logging()
-ARMS = ["A", "B", "C", "Astar"]
+ARMS = ["A", "B", "C", "Astar", "Creleased", "Cfixed"]
 
 
 def _long_from_labels(df: pd.DataFrame, pairs: list) -> pd.DataFrame:

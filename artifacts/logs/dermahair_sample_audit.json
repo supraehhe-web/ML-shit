@@ -1,0 +1,149 @@
+{
+  "config_audit": {
+    "batch_size": 4,
+    "checkpoint_iteration_exceeds_config_n_iter": true,
+    "classes": [
+      "akiec",
+      "bcc",
+      "bkl",
+      "df",
+      "mel",
+      "nv",
+      "vasc"
+    ],
+    "dataroot_per_class": {
+      "akiec": "hair_removal/akiec_16_128",
+      "bcc": "Image-Super-Resolution-via-Iterative-Refinement/bcc_16_128",
+      "bkl": "Image-Super-Resolution-via-Iterative-Refinement/bkl_16_128",
+      "df": "Image-Super-Resolution-via-Iterative-Refinement/df_16_128",
+      "mel": "Image-Super-Resolution-via-Iterative-Refinement/mel_16_128",
+      "nv": "Image-Super-Resolution-via-Iterative-Refinement/nv_16_128",
+      "vasc": "Image-Super-Resolution-via-Iterative-Refinement/vasc_16_128"
+    },
+    "dataset_mode_train_val": [
+      "HR",
+      "LRHR"
+    ],
+    "ema_marked_not_used_in_upstream_config": true,
+    "ema_referenced_in_any_upstream_python": false,
+    "ema_scheduler_in_config": {
+      "ema_decay": 0.9999,
+      "step_start_ema": 5000,
+      "update_ema_every": 1
+    },
+    "grad_clip_in_upstream_trainer": false,
+    "implies_class_specific_checkpoint": false,
+    "interpretation": "All seven configs resume from the same experiment/checkpoint and differ only in the dataset folder they point at, so they select the evaluation class folder, not a class-specific model. The training data path named in each config is that class folder; the configs do not document the data the released weights were trained on.",
+    "l_resolution_r_resolution": [
+      16,
+      128
+    ],
+    "lr": 0.0001,
+    "model_block_identical_across_classes": true,
+    "n_iter_in_config": 660000,
+    "paper_stated_iterations": 20000,
+    "released_checkpoint_iteration": 725000,
+    "resume_state_basename_per_class": {
+      "akiec": "I725000_E1083",
+      "bcc": "I725000_E1083",
+      "bkl": "I725000_E1083",
+      "df": "I725000_E1083",
+      "mel": "I725000_E1083",
+      "nv": "I725000_E1083",
+      "vasc": "I725000_E1083"
+    },
+    "single_shared_checkpoint_name": true,
+    "train_block_identical_across_classes": true
+  },
+  "definition": "hair_frac = share of pixels whose max-channel |hairy - reference| exceeds 30/255, measured at 128 px",
+  "dermahair_akiec_sample": {
+    "class": "akiec",
+    "floor_psnr_128": {
+      "max": 36.77889973523082,
+      "mean": 19.372937055648293,
+      "median": 18.84251741597929,
+      "min": 7.344210811080133,
+      "n": 101,
+      "sd": 5.370854131138668
+    },
+    "floor_psnr_256": {
+      "max": 35.68691410562211,
+      "mean": 18.270241091342506,
+      "median": 17.724279524131,
+      "min": 6.92168433369271,
+      "n": 101,
+      "sd": 5.213805414822153
+    },
+    "floor_ssim_128": {
+      "max": 0.9857369764078894,
+      "mean": 0.5971180281197652,
+      "median": 0.6706442863166263,
+      "min": 0.0573287077312048,
+      "n": 101,
+      "sd": 0.24692487544075561
+    },
+    "floor_ssim_256": {
+      "max": 0.9878160354117828,
+      "mean": 0.6726751510599368,
+      "median": 0.7454973625968374,
+      "min": 0.09921722716185762,
+      "n": 101,
+      "sd": 0.22324505525160837
+    },
+    "hair_frac_128": {
+      "max": 0.63397216796875,
+      "mean": 0.13877219020730197,
+      "median": 0.0919189453125,
+      "min": 0.0037841796875,
+      "n": 101,
+      "sd": 0.12421051351488147
+    },
+    "image_sizes": [
+      [
+        256,
+        256
+      ]
+    ],
+    "n_pairs": 101,
+    "ref_detector_coverage_at_256px": {
+      "max": 0.8364715576171875,
+      "mean": 0.2723310111772896,
+      "median": 0.207550048828125,
+      "min": 0.0122528076171875,
+      "n": 101,
+      "sd": 0.19910016549289322
+    },
+    "ref_detector_flagged_fraction_UNINTERPRETABLE_outside_design_resolution": 1.0,
+    "sr_and_lr_folders_byte_identical_fraction": 1.0,
+    "zip": "third_party/dmahr/dataset/akiec_16_128.zip"
+  },
+  "our_synthetic_test_pairs": {
+    "floor_psnr_128": {
+      "max": 28.257125775584875,
+      "mean": 22.12650390619163,
+      "median": 21.935644646108432,
+      "min": 17.46154133762273,
+      "n": 186,
+      "sd": 1.9042371053589597
+    },
+    "floor_ssim_128": {
+      "max": 0.7802692406055801,
+      "mean": 0.5199638898401483,
+      "median": 0.522477935034954,
+      "min": 0.3286657750663919,
+      "n": 186,
+      "sd": 0.0931266732744432
+    },
+    "hair_frac_128": {
+      "max": 0.24688720703125,
+      "mean": 0.1484397970220094,
+      "median": 0.141326904296875,
+      "min": 0.05352783203125,
+      "n": 186,
+      "sd": 0.04183513173420372
+    },
+    "n_pairs": 186,
+    "note": "same diff-threshold hair-fraction definition as the DERMAHAIR sample",
+    "split": "test"
+  }
+}
