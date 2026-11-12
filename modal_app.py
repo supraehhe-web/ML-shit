@@ -211,6 +211,15 @@ def dmahr_train(overfit: bool = False):
     return _run("04_dmahr_train.py", ["--overfit"] if overfit else [])
 
 
+# Arm C diagnosis. Runs on validation synthetic pairs only, so no test-set
+# choice depends on it. A100-40GB is the cheapest card measured to run the
+# sampler without becoming the bottleneck.
+@app.function(image=image, gpu="A100-40GB", timeout=3600, volumes={"/vol": vol})
+def arm_c_diagnose(identity_n: int = 50, pairs_n: int = 100):
+    return _run("17_arm_c_diagnose.py",
+                ["--identity-n", str(identity_n), "--pairs-n", str(pairs_n)])
+
+
 @app.function(image=image, gpu="A100-80GB", timeout=86400, volumes={"/vol": vol})
 def dmahr_overfit():
     return _run("04_dmahr_train.py", ["--overfit"])
