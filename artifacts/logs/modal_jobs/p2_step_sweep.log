@@ -1,0 +1,82 @@
+✓ Initialized. View run at 
+https://modal.com/apps/ncip85613/main/ap-GFkP1nHgj98Aw6wyf8vHDq
+✓ Created objects.
+RUN /usr/local/bin/python /root/proj/scripts/22_arm_c_diagnose_v2.py --stage sweep --score-n 50 --bf16 --gpu A100-40GB --budget-usd 0.6
+{"label": "arm_c_diagnose_v2:sweep", "units": 1, "seconds_per_unit": 489.0, "gpu": "A100-40GB", "estimated_seconds": 489.0, "estimated_usd": 0.29, "budget_usd": 0.6, "price_source": "reports/compute_plan.md (modal.com/pricing, read 2026-11-11)"}
+loaded DM-AHR checkpoint /__modal/volumes/vo-Yfgbqu0raQMBZb7syrtU35/data/raw/dmahr_weights/I725000_E1083_gen.pth (strict)
+
+/usr/local/lib/python3.11/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=AlexNet_Weights.IMAGENET1K_V1`. You can also use `weights=AlexNet_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+
+  0%|          | 0.00/233M [00:00<?, ?B/s]
+/usr/local/lib/python3.11/site-packages/lpips/lpips.py:107: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  self.load_state_dict(torch.load(model_path, map_location='cpu'), strict=False)
+2026-11-12 15:14:07,944 INFO dm_ahr_vit :: sweep 50 steps: PSNR 12.70 SSIM 0.056 (6s)
+
+2026-11-12 15:14:18,395 INFO dm_ahr_vit :: sweep 100 steps: PSNR 15.24 SSIM 0.161 (10s)
+
+2026-11-12 15:14:42,976 INFO dm_ahr_vit :: sweep 250 steps: PSNR 18.35 SSIM 0.480 (24s)
+
+2026-11-12 15:15:31,202 INFO dm_ahr_vit :: sweep 500 steps: PSNR 20.50 SSIM 0.564 (47s)
+
+2026-11-12 15:17:06,749 INFO dm_ahr_vit :: sweep 1000 steps: PSNR 24.29 SSIM 0.636 (95s)
+
+2026-11-12 15:20:17,043 INFO dm_ahr_vit :: sweep 2000 steps: PSNR 26.41 SSIM 0.682 (189s)
+{
+ "chosen_steps": 2000,
+ "reference_steps": 2000,
+ "reference_psnr": 26.414841345288675,
+ "tolerance_db": 1.0,
+ "valid": {
+  "psnr": 26.414841345288675,
+  "ssim": 0.6815611278848265,
+  "hairy_psnr": 22.342935332025622,
+  "hairy_ssim": 0.5311920134481177,
+  "valid": true,
+  "rule": "PSNR >= hairy + 3.0 dB and SSIM > hairy SSIM (validation pairs)"
+ }
+}
+{
+ "branch": {
+  "branch": null,
+  "status": "NOT RUN",
+  "missing": [
+   "noise-prediction MSE",
+   "checkpoint trend",
+   "warm start",
+   "overfit"
+  ]
+ },
+ "inputs_present": {
+  "mse": false,
+  "score": false,
+  "warm_start": false,
+  "overfit": false
+ },
+ "static_audit": {
+  "ema": "upstream marks EMA 'not used now'; no EMA code upstream or in our trainer",
+  "ema_bug_branch_a": "ruled out by audit (no EMA weights exist)"
+ },
+ "validity_of_fixed_arm": null,
+ "step_sweep_choice": {
+  "chosen_steps": 2000,
+  "reference_psnr": 26.414841345288675,
+  "reference_steps": 2000,
+  "tolerance_db": 1.0,
+  "valid": {
+   "hairy_psnr": 22.342935332025622,
+   "hairy_ssim": 0.5311920134481177,
+   "psnr": 26.414841345288675,
+   "rule": "PSNR >= hairy + 3.0 dB and SSIM > hairy SSIM (validation pairs)",
+   "ssim": 0.6815611278848265,
+   "valid": true
+  }
+ }
+}
+EXIT 0 in 429.8s
+Stopping app - local entrypoint completed.
+✓ App completed. View run at 
+https://modal.com/apps/ncip85613/main/ap-GFkP1nHgj98Aw6wyf8vHDq
+exit=0

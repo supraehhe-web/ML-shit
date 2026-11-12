@@ -34,6 +34,8 @@ def main() -> int:
                     help="process synthetic pairs for this split instead of real hair-present images")
     ap.add_argument("--bf16", action="store_true",
                     help="bf16 autocast; ~2x faster, verified against fp32 in the smoke test")
+    ap.add_argument("--schedule-mode", choices=["rederive", "respaced"], default="rederive",
+                    help="rederive = linear betas re-derived over the shorter chain (D12 ablation); respaced = same noise-level path (D24)")
     ap.add_argument("--out-arm", default="C",
                     help="processed/<arm> output directory: C, Creleased or Cfixed")
     ap.add_argument("--gpu", default="A100-80GB")
@@ -59,7 +61,7 @@ def main() -> int:
             "image_id": pairs["image_id"].values,
             "source_path": pairs["hairy_path"].values,
         })
-        out_dir = processed_dir("synth") / args.pairs_split / "cleaned_C"
+        out_dir = processed_dir("synth") / args.pairs_split / f"cleaned_{args.out_arm}"
     else:
         screen = pd.read_csv(manifest_dir() / "hair_screening.csv")
         todo = screen[screen["hair_present"]].sort_values("image_id").reset_index(drop=True)
@@ -81,7 +83,9 @@ def main() -> int:
         steps_run = int(args.num_timesteps or cfg["num_timesteps"])
         probe = [Image.open(p).convert("RGB") for p in todo["source_path"].head(args.bench_n)]
         tb = time.time()
-        clean_batch(net, probe, cfg, device=device, seed=0, num_timesteps=100, use_bf16=args.bf16)
+        clean_batch(net, probe, cfg, device=device, seed=0, num_timesteps=100, use_bf16=args.bf16,
+                    schedule_mode=args.schedule_mode)
+        steps_run = int(args.num_timesteps or cfg["num_timesteps"])
         torch.cuda.synchronize()
         per_step = (time.time() - tb) / (len(probe) * 100)
         gate(f"sample_{args.out_arm}", len(todo) * args.n_shards, per_step * steps_run, args.gpu,
@@ -94,7 +98,7 @@ def main() -> int:
         images = [Image.open(p).convert("RGB") for p in chunk["source_path"]]
         seed = int(hashlib.sha256(f"{args.shard}:{start}".encode()).hexdigest()[:8], 16)
         outs, stats = clean_batch(net, images, cfg, device=device, seed=seed,
-                                  num_timesteps=args.num_timesteps,
+                                  num_timesteps=args.num_timesteps, schedule_mode=args.schedule_mode,
                                   use_bf16=args.bf16)
         for image_id, out in zip(chunk["image_id"], outs):
             path = out_dir / f"{image_id}.png"
@@ -103,13 +107,13 @@ def main() -> int:
             tmp.replace(path)
             rows.append({"image_id": image_id, "path": str(path), "seed": seed,
                          "num_timesteps": stats["num_timesteps"],
-                         "bf16": stats["bf16"],
+                         "bf16": stats["bf16"], "schedule_mode": stats["schedule_mode"],
                          "finite": stats["finite"], "width": out.width, "height": out.height})
         if (start // bs) % 20 == 0:
             log.info("shard %d: %d/%d (%.0fs)", args.shard, start + len(chunk), len(todo),
                      time.time() - t0)
     df = pd.DataFrame(rows)
-    tag = f"pairs_{args.pairs_split}" if args.pairs_split else "real"
+    tag = (f"pairs_{args.pairs_split}" if args.pairs_split else "real") + ("" if args.out_arm == "C" else f"_{args.out_arm}")
     out_csv = artifact_dir("logs") / f"dmahr_sample_{tag}_shard{args.shard}.csv"
     df.to_csv(out_csv, index=False)
     summary = {
