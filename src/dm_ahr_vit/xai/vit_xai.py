@@ -157,7 +157,7 @@ def top_fraction_mask(saliency: np.ndarray, fraction: float = 0.2) -> np.ndarray
 
 
 def lesion_overlap(saliency: np.ndarray, mask: np.ndarray, fraction: float = 0.2) -> float:
-    """Fraction of the lesion mask covered by the top-`fraction` salience region."""
+    """Mask recall: the share of lesion pixels inside the top-`fraction` most salient pixels, |top ∩ mask| / |mask|. This is recall of the lesion, not precision of the salient region."""
     top = top_fraction_mask(saliency, fraction)
     lesion_area = float(mask.sum())
     if lesion_area == 0:
@@ -166,7 +166,7 @@ def lesion_overlap(saliency: np.ndarray, mask: np.ndarray, fraction: float = 0.2
 
 
 def pointing_game(saliency: np.ndarray, mask: np.ndarray, tolerance: int = 0) -> float:
-    """1.0 if the argmax salience pixel falls on the lesion (optionally dilated)."""
+    """Pointing game: 1.0 if the single most salient pixel lies on the lesion mask (optionally dilated by `tolerance`), else 0.0."""
     m = mask.astype(bool)
     if tolerance > 0:
         k = 2 * tolerance + 1
@@ -199,6 +199,121 @@ def gaussian_chance_map(size: int = 224, sigma_frac: float = 0.25) -> np.ndarray
     sigma = size * sigma_frac
     g = np.exp(-(((xx - c) ** 2 + (yy - c) ** 2) / (2 * sigma**2)))
     return g / g.max()
+
+
+def overlap_chance(fraction: float = 0.2) -> float:
+    """Chance level of the overlap metric: a random salient region of area `fraction` recovers that same share of any lesion, so the expectation equals `fraction` for every mask size."""
+    return float(fraction)
+
+
+def pointing_chance(mask: np.ndarray) -> float:
+    """Chance level of the pointing game: the probability that a uniformly random argmax lands on the lesion, which is the lesion's share of the image area (mask.mean())."""
+    return float(np.asarray(mask, dtype=bool).mean())
+
+
+def random_argmax_pointing(mask: np.ndarray, n: int = 2000, seed: int = 0) -> float:
+    """Monte-Carlo estimate of the pointing chance level from random salience maps, used to check `pointing_chance` empirically."""
+    rng = np.random.default_rng(seed)
+    flat = np.asarray(mask, dtype=bool).ravel()
+    hits = flat[rng.integers(0, flat.size, size=n)]
+    return float(hits.mean())
+
+
+def overlap_ceiling(mask: np.ndarray, fraction: float = 0.2) -> float:
+    """Largest attainable overlap for this mask, min(1, fraction / area share): a salient region of area `fraction` cannot cover more than that share of a larger lesion."""
+    area = float(np.asarray(mask, dtype=bool).mean())
+    if area <= 0:
+        return float("nan")
+    return float(min(1.0, fraction / area))
+
+
+def ceiling_normalised_overlap(overlap: float, mask: np.ndarray, fraction: float = 0.2) -> float:
+    """Overlap divided by its ceiling for the same mask, so large lesions are not penalised for the fixed salient-region budget."""
+    ceiling = overlap_ceiling(mask, fraction)
+    if not np.isfinite(ceiling) or ceiling <= 0:
+        return float("nan")
+    return float(overlap / ceiling)
+
+
+def mask_centroid_offset(mask: np.ndarray) -> tuple[float, float]:
+    """Lesion centroid offset from the image centre as (dy, dx), in fractions of the image height and width (0 = centred, +-0.5 = at the border)."""
+    m = np.asarray(mask, dtype=bool)
+    if not m.any():
+        return float("nan"), float("nan")
+    ys, xs = np.nonzero(m)
+    h, w = m.shape
+    return (float(ys.mean() + 0.5) / h - 0.5, float(xs.mean() + 0.5) / w - 0.5)
+
+
+def mask_contains_centre(mask: np.ndarray) -> bool:
+    """True when the pixel at the image centre belongs to the lesion mask."""
+    m = np.asarray(mask, dtype=bool)
+    return bool(m[m.shape[0] // 2, m.shape[1] // 2])
+
+
+def translate_array(arr: np.ndarray, dy: int, dx: int, mode: str = "constant") -> np.ndarray:
+    """Translate an (H, W) or (H, W, C) array by (dy, dx) pixels. `constant` pads with zeros (masks); `reflect` mirrors the border (images)."""
+    h, w = arr.shape[:2]
+    pad = [(max(dy, 0), max(-dy, 0)), (max(dx, 0), max(-dx, 0))] + [(0, 0)] * (arr.ndim - 2)
+    padded = np.pad(arr, pad, mode=mode)
+    top, left = max(-dy, 0), max(-dx, 0)
+    return padded[top:top + h, left:left + w]
+
+
+def seeded_shift(key: str, size: int = 224, max_frac: float = 0.3) -> tuple[int, int]:
+    """Deterministic (dy, dx) shift, uniform in +-`max_frac` of the image size, derived from a string key such as the image id."""
+    import hashlib
+
+    seed = int(hashlib.sha256(key.encode()).hexdigest()[:8], 16)
+    rng = np.random.default_rng(seed)
+    lim = int(round(size * max_frac))
+    return int(rng.integers(-lim, lim + 1)), int(rng.integers(-lim, lim + 1))
+
+
+@torch.no_grad()
+def insertion_deletion_auc(model, x: torch.Tensor, saliency: np.ndarray, class_idx: int,
+                           steps: int = 20, batch: int = 21) -> tuple[float, float]:
+    """Faithfulness curves: class probability as the most salient pixels are removed (deletion, lower is better) or revealed from an all-mean image (insertion, higher is better). Returns (insertion AUC, deletion AUC) over pixel fractions 0..1."""
+    model.eval()
+    device = x.device
+    h, w = saliency.shape
+    order = torch.from_numpy(np.argsort(-saliency.ravel(), kind="stable")).to(device)
+    rank = torch.empty_like(order)
+    rank[order] = torch.arange(order.numel(), device=device)
+    rank = rank.view(1, 1, h, w).float()
+    fracs = torch.linspace(0.0, 1.0, steps + 1, device=device)
+    baseline = torch.zeros_like(x)  # zero in normalised space = dataset mean colour
+    ins, dele = [], []
+    for start in range(0, len(fracs), batch):
+        fr = fracs[start:start + batch]
+        keep = (rank < (fr.view(-1, 1, 1, 1) * h * w)).float()
+        ins_in = baseline * (1 - keep) + x * keep
+        del_in = x * (1 - keep) + baseline * keep
+        pi = torch.softmax(model(ins_in), dim=1)[:, class_idx]
+        pd_ = torch.softmax(model(del_in), dim=1)[:, class_idx]
+        ins.append(pi.float().cpu())
+        dele.append(pd_.float().cpu())
+    ins_c, del_c = torch.cat(ins).numpy(), torch.cat(dele).numpy()
+    grid = fracs.cpu().numpy()
+    trap = getattr(np, "trapezoid", None) or np.trapz
+    return float(trap(ins_c, grid)), float(trap(del_c, grid))
+
+
+METRIC_FUNCTIONS = {
+    "overlap": lesion_overlap,
+    "pointing": pointing_game,
+    "overlap_chance": overlap_chance,
+    "pointing_chance": pointing_chance,
+    "overlap_ceiling": overlap_ceiling,
+    "ceiling_normalised_overlap": ceiling_normalised_overlap,
+}
+
+
+def metric_definition(name: str) -> str:
+    """Definition sentence for a saliency metric, taken from the function docstring so report text cannot drift from the code."""
+    import inspect
+
+    return " ".join(inspect.getdoc(METRIC_FUNCTIONS[name]).split())
 
 
 def overlay_heatmap(image: np.ndarray, cam: np.ndarray, alpha: float = 0.45) -> np.ndarray:
