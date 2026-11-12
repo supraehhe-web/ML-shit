@@ -23,7 +23,7 @@ from dm_ahr_vit.paths import artifact_dir, manifest_dir  # noqa: E402
 from dm_ahr_vit.utils import record_run, setup_logging  # noqa: E402
 
 log = setup_logging()
-SECONDS_PER_ITER = 0.055  # measured, reports/compute_plan.md (A100-80GB, batch 4)
+SECONDS_PER_ITER = 0.095  # conservative: measured 2026-11-12 on A100-40GB with the first (per-step-sync) trainer
 
 
 def main() -> int:

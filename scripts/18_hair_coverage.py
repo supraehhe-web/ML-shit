@@ -1,13 +1,29 @@
-"""Macro-F1 by hair-coverage decile, and residual hair after each arm.
+"""Hair-coverage reanalysis (CPU only, from existing per-image predictions).
 
-Exploratory only, computed from existing predictions on CPU. No retraining and
-no GPU. Tests whether Arm B's deficit is concentrated on images that barely had
-hair, which would point to false-positive damage rather than hair removal.
+Replaces the per-decile macro-F1 of the first version: about 150 images spread over
+seven classes per decile made every cell too noisy to interpret.
+
+1. Pooled, lesion-clustered model. Per-image correctness (mean over the three seeds,
+   so the response is a fraction) is regressed on arm, image-level hair coverage (per
+   10 percentage points) and their interaction: a fractional logit (binomial GLM) with
+   cluster-robust standard errors by lesion group. Arm A is the reference, so the
+   arm term is the difference at zero coverage and the interaction term is how the
+   gap changes per +10 pp of coverage. Sensitivity: group-mean coverage per lesion.
+   Predicted accuracy gaps at fixed coverages use the delta method.
+2. Per-decile balanced accuracy (macro recall over the classes present in the
+   decile) with lesion-cluster bootstrap CIs, for each arm and for each arm's gap to A.
+3. Internal control. Images screened as hair-absent pass through unchanged in every
+   arm, so arm differences on them cannot come from hair removal; they show how large
+   between-arm differences are from training composition and seeds alone.
+
+Outputs (artifacts/logs): hair_coverage_pooled_model.csv, hair_coverage_marginal_gaps.csv,
+hair_coverage_decile_balacc.csv, hair_coverage_decile_gaps.csv, hair_coverage_control.json
 """
 
 from __future__ import annotations
 
 import sys
+import warnings
 from pathlib import Path
 
 import numpy as np
@@ -15,25 +31,18 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from dm_ahr_vit.config import CLASSES  # noqa: E402
+from dm_ahr_vit.config import CLASSES, save_json  # noqa: E402
 from dm_ahr_vit.paths import artifact_dir, manifest_dir  # noqa: E402
 from dm_ahr_vit.stats.bootstrap import holm  # noqa: E402
 from dm_ahr_vit.utils import record_run, setup_logging  # noqa: E402
 
 log = setup_logging()
-ARMS = ["A", "Astar", "B", "C"]
+ARMS = ["A", "Astar", "B", "C", "Creleased", "Cfixed"]
 SEEDS = [42, 123, 2026]
-
-
-def macro_f1(y_true: np.ndarray, y_pred: np.ndarray) -> float:
-    f1s = []
-    for k in range(len(CLASSES)):
-        tp = float(((y_pred == k) & (y_true == k)).sum())
-        fp = float(((y_pred == k) & (y_true != k)).sum())
-        fn = float(((y_pred != k) & (y_true == k)).sum())
-        denom = 2 * tp + fp + fn
-        f1s.append(2 * tp / denom if denom > 0 else 0.0)
-    return float(np.mean(f1s))
+CIDX = {c: i for i, c in enumerate(CLASSES)}
+K = len(CLASSES)
+REPS = 2000
+BSEED = 20260101
 
 
 def load(arm: str) -> pd.DataFrame | None:
@@ -42,164 +51,196 @@ def load(arm: str) -> pd.DataFrame | None:
         p = artifact_dir("predictions") / f"pred_{arm}_seed{seed}_full.csv"
         if not p.exists():
             return None
-        df = pd.read_csv(p)
-        df["seed"] = seed
-        frames.append(df)
+        d = pd.read_csv(p)
+        d["seed"] = seed
+        frames.append(d)
     return pd.concat(frames, ignore_index=True)
 
 
-def cluster_bootstrap(diffs: np.ndarray, groups: np.ndarray,
-                      reps: int = 10000, seed: int = 20260101) -> dict:
-    """Bootstrap a mean difference by resampling lesion groups."""
-    uniq = np.unique(groups)
-    idx = {g: i for i, g in enumerate(uniq)}
-    gi = np.array([idx[g] for g in groups])
-    sums = np.zeros(len(uniq))
-    cnts = np.zeros(len(uniq))
-    np.add.at(sums, gi, diffs)
-    np.add.at(cnts, gi, 1.0)
+def arm_counts(df: pd.DataFrame, ids: set, groups: list) -> list[tuple[np.ndarray, np.ndarray]]:
+    gidx = {g: i for i, g in enumerate(groups)}
+    out = []
+    for _, d in df[df["image_id"].isin(ids)].groupby("seed"):
+        t = np.zeros((len(groups), K))
+        c = np.zeros((len(groups), K))
+        gi = d["group_id"].map(gidx).to_numpy()
+        y = d["label"].map(CIDX).to_numpy()
+        p = d["pred"].map(CIDX).to_numpy()
+        np.add.at(t, (gi, y), 1.0)
+        np.add.at(c, (gi, y), (y == p).astype(float))
+        out.append((t, c))
+    return out
+
+
+def balanced_accuracy(W: np.ndarray, counts: list) -> np.ndarray:
+    """Seed-averaged balanced accuracy for each weight row of W (macro recall, absent classes skipped)."""
+    vals = []
+    for t, c in counts:
+        tt, cc = W @ t, W @ c
+        rec = np.where(tt > 0, cc / np.maximum(tt, 1e-12), np.nan)
+        vals.append(np.nanmean(rec, axis=1))
+    return np.mean(vals, axis=0)
+
+
+def draw_weights(n_groups: int, reps: int, seed: int) -> np.ndarray:
     rng = np.random.default_rng(seed)
-    draws = rng.integers(0, len(uniq), size=(reps, len(uniq)))
-    num = sums[draws].sum(axis=1)
-    den = cnts[draws].sum(axis=1)
-    ok = den > 0
-    dist = np.full(reps, np.nan)
-    dist[ok] = num[ok] / den[ok]
-    dist = dist[np.isfinite(dist)]
-    lo, hi = np.percentile(dist, [2.5, 97.5])
-    p = 2 * min(float((dist <= 0).mean()), float((dist >= 0).mean()))
-    return {"diff": float(diffs.mean()), "ci_low": float(lo), "ci_high": float(hi),
-            "p_raw": float(min(1.0, p)), "n_groups": int(len(uniq))}
+    idx = rng.integers(0, n_groups, size=(reps, n_groups))
+    w = np.zeros((reps, n_groups))
+    for r in range(reps):
+        w[r] = np.bincount(idx[r], minlength=n_groups)
+    return w
+
+
+def pooled_model(long: pd.DataFrame, cov_col: str, variant: str):
+    import statsmodels.api as sm
+    import statsmodels.formula.api as smf
+
+    codes = pd.factorize(long["group_id"])[0]
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        res = smf.glm(f"y ~ C(arm, Treatment('A')) * {cov_col}", data=long,
+                      family=sm.families.Binomial()).fit(cov_type="cluster", cov_kwds={"groups": codes})
+    ci = res.conf_int()
+    table = pd.DataFrame({"variant": variant, "term": res.params.index, "coef_logit": res.params.values,
+                          "se": res.bse.values, "ci_low": ci[0].values, "ci_high": ci[1].values,
+                          "p": res.pvalues.values, "n_obs": int(res.nobs),
+                          "n_groups": int(len(np.unique(codes)))})
+    return res, table
+
+
+def marginal_gaps(res, arms: list[str], cov_col: str, points: list[float], variant: str) -> pd.DataFrame:
+    import re
+
+    from scipy.special import expit
+    from scipy.stats import norm
+
+    V = np.asarray(res.cov_params())
+    beta = res.params.values
+    names = list(res.params.index)
+
+    def x(arm: str, cov10: float) -> np.ndarray:
+        out = []
+        for n in names:
+            if n == "Intercept":
+                out.append(1.0)
+            elif n == cov_col:
+                out.append(cov10)
+            else:
+                level = re.search(r"\[T\.([^\]]+)\]", n).group(1)
+                v = 1.0 if level == arm else 0.0
+                out.append(v * cov10 if n.endswith(":" + cov_col) else v)
+        return np.asarray(out)
+
+    rows = []
+    for arm in arms:
+        if arm == "A":
+            continue
+        for cov in points:
+            xa, xb = x(arm, cov / 0.10), x("A", cov / 0.10)
+            ma, mb = expit(xa @ beta), expit(xb @ beta)
+            g = ma * (1 - ma) * xa - mb * (1 - mb) * xb
+            se = float(np.sqrt(g @ V @ g))
+            gap = float(ma - mb)
+            rows.append({"variant": variant, "comparison": f"{arm}-A", "coverage": cov, "gap": gap,
+                         "ci_low": gap - 1.96 * se, "ci_high": gap + 1.96 * se,
+                         "p": float(2 * (1 - norm.cdf(abs(gap / se)))) if se > 0 else np.nan,
+                         "acc_arm": float(ma), "acc_A": float(mb)})
+    return pd.DataFrame(rows)
 
 
 def main() -> int:
     hair = pd.read_csv(manifest_dir() / "hair_screening.csv")
-    test_hair = hair[hair["split"] == "test"].set_index("image_id")["hair_coverage"]
-
+    th = hair[hair["split"] == "test"].set_index("image_id")
     preds = {a: load(a) for a in ARMS}
     preds = {a: d for a, d in preds.items() if d is not None}
     if "A" not in preds:
-        log.error("Arm A predictions missing; run 07_eval_vit.py first")
+        log.error("Arm A predictions missing")
         return 1
+    arms = list(preds)
 
-    # Coverage deciles from the test split's own distribution.
-    cov = test_hair.dropna()
-    edges = np.unique(np.quantile(cov, np.linspace(0, 1, 11)))
-    edges = edges[edges >= 0]
-    if len(edges) < 3:
-        log.error("not enough coverage variation to form deciles")
-        return 1
-    bins = pd.cut(cov, bins=edges, include_lowest=True, duplicates="drop")
-    decile_of = {img: int(c) for img, c in bins.cat.codes.items()}
-
-    rows = []
-    group_rows = []
-    for arm, df in preds.items():
-        d = df.copy()
-        d["coverage"] = d["image_id"].map(test_hair)
-        d["decile"] = d["image_id"].map(decile_of)
-        d = d.dropna(subset=["coverage", "decile"])
-        for dec, sub in d.groupby("decile"):
-            per_seed = [macro_f1(g["label"].map(CLASSES.index).to_numpy(),
-                                 g["pred"].map(CLASSES.index).to_numpy())
-                        for _, g in sub.groupby("seed")]
-            rows.append({
-                "arm": arm, "decile": int(dec),
-                "coverage_lo": float(sub["coverage"].min()),
-                "coverage_hi": float(sub["coverage"].max()),
-                "n_images": int(sub["image_id"].nunique()),
-                "macro_f1": float(np.mean(per_seed)),
-            })
-        # Per-group correctness, averaged over seeds, for the gap analysis.
+    # ---- 1. pooled lesion-clustered fractional logit -------------------------
+    frames = []
+    for a, d in preds.items():
+        d = d.copy()
         d["correct"] = (d["label"] == d["pred"]).astype(float)
-        agg = d.groupby(["group_id", "seed"])["correct"].mean().reset_index()
-        group_rows.append(agg.groupby("group_id")["correct"].mean()
-                          .rename(arm).reset_index())
+        m = d.groupby(["image_id", "group_id"])["correct"].mean().reset_index().rename(columns={"correct": "y"})
+        m["arm"] = a
+        frames.append(m)
+    long = pd.concat(frames, ignore_index=True)
+    long["coverage"] = long["image_id"].map(th["hair_coverage"])
+    long["cov10"] = long["coverage"] / 0.10
+    gm = long.groupby("group_id")["coverage"].mean()
+    long["cov10_group"] = long["group_id"].map(gm) / 0.10
+    long = long.dropna(subset=["cov10"])
+    pts = [0.0, 0.02, 0.06, 0.16, 0.30]
+    tables, gaps = [], []
+    for col, name in (("cov10", "image_coverage"), ("cov10_group", "group_mean_coverage")):
+        res, t = pooled_model(long, col, name)
+        tables.append(t)
+        gaps.append(marginal_gaps(res, arms, col, pts, name))
+    pd.concat(tables).to_csv(artifact_dir("logs") / "hair_coverage_pooled_model.csv", index=False)
+    pd.concat(gaps).round(5).to_csv(artifact_dir("logs") / "hair_coverage_marginal_gaps.csv", index=False)
+    log.info("pooled model\n%s", pd.concat(tables).round(4).to_string(index=False))
 
-    table = pd.DataFrame(rows).sort_values(["arm", "decile"])
-    table.to_csv(artifact_dir("logs") / "hair_coverage_by_decile.csv", index=False)
-    log.info("per-decile macro-F1\n%s", table.to_string(index=False))
-
-    # Gaps versus Arm A, per decile, with lesion-cluster CIs.
-    merged = group_rows[0]
-    for g in group_rows[1:]:
-        merged = merged.merge(g, on="group_id", how="inner")
-
-    # One decile per lesion group: the mean coverage of its test images.
-    splits = pd.read_csv(manifest_dir() / "splits.csv")
-    test_map = splits[splits["split"] == "test"][["image_id", "group_id"]].copy()
-    test_map["coverage"] = test_map["image_id"].map(test_hair)
-    group_cov = test_map.dropna(subset=["coverage"]).groupby("group_id")["coverage"].mean()
-    group_decile = {
-        g: int(pd.cut(pd.Series([c]), bins=edges, include_lowest=True,
-                      labels=False).iloc[0])
-        for g, c in group_cov.items()
-    }
-    merged["decile"] = merged["group_id"].map(group_decile)
-    merged = merged.dropna(subset=["decile"])
-
-    gap_rows = []
-    for arm in [a for a in ARMS if a in merged.columns and a != "A"]:
-        for dec, sub in merged.groupby("decile"):
-            if len(sub) < 20:
+    # ---- 2. per-decile balanced accuracy -------------------------------------
+    cov = th["hair_coverage"].dropna()
+    edges = np.unique(np.quantile(cov, np.linspace(0, 1, 11)))
+    dec = pd.cut(cov, bins=edges, include_lowest=True, labels=False)
+    dec_rows, gap_rows = [], []
+    for k in sorted(dec.dropna().unique()):
+        ids = set(dec[dec == k].index)
+        groups = sorted(set(preds["A"].loc[preds["A"]["image_id"].isin(ids), "group_id"]))
+        W = draw_weights(len(groups), REPS, BSEED + int(k))
+        counts = {a: arm_counts(preds[a], ids, groups) for a in arms}
+        point, boot = {}, {}
+        for a in arms:
+            point[a] = float(balanced_accuracy(np.ones((1, len(groups))), counts[a])[0])
+            boot[a] = balanced_accuracy(W, counts[a])
+        sub = cov[list(ids)]
+        pass_through = float((~th.loc[list(ids), "hair_present"].astype(bool)).mean())
+        for a in arms:
+            lo, hi = np.nanpercentile(boot[a], [2.5, 97.5])
+            dec_rows.append({"arm": a, "decile": int(k), "coverage_lo": float(sub.min()),
+                             "coverage_hi": float(sub.max()), "n_images": len(ids), "n_groups": len(groups),
+                             "pass_through_fraction": pass_through, "balanced_accuracy": point[a],
+                             "ci_low": float(lo), "ci_high": float(hi)})
+        for a in arms:
+            if a == "A":
                 continue
-            diffs = (sub[arm] - sub["A"]).to_numpy(dtype=float)
-            groups = sub["group_id"].to_numpy()
-            r = cluster_bootstrap(diffs, groups)
-            gap_rows.append({"comparison": f"{arm}-A", "decile": int(dec),
-                             "n_groups": r["n_groups"], **{k: v for k, v in r.items()
-                                                           if k != "n_groups"}})
-    gaps = pd.DataFrame(gap_rows)
-    if not gaps.empty:
-        gaps["p_holm"] = np.nan
-        for _, grp in gaps.groupby("comparison"):
-            gaps.loc[grp.index, "p_holm"] = holm(grp["p_raw"].tolist())
-        gaps = gaps.round(4)
-        gaps.to_csv(artifact_dir("logs") / "hair_coverage_gaps.csv", index=False)
-        log.info("per-decile gaps vs Arm A\n%s", gaps.to_string(index=False))
+            d = boot[a] - boot["A"]
+            lo, hi = np.nanpercentile(d, [2.5, 97.5])
+            p = 2 * min(float(np.nanmean(d <= 0)), float(np.nanmean(d >= 0)))
+            gap_rows.append({"comparison": f"{a}-A", "decile": int(k), "n_images": len(ids),
+                             "pass_through_fraction": pass_through, "gap": point[a] - point["A"],
+                             "ci_low": float(lo), "ci_high": float(hi), "p_raw": min(1.0, p)})
+    pd.DataFrame(dec_rows).round(5).to_csv(artifact_dir("logs") / "hair_coverage_decile_balacc.csv", index=False)
+    gdf = pd.DataFrame(gap_rows)
+    gdf["p_holm"] = np.nan
+    for _, g in gdf.groupby("comparison"):
+        gdf.loc[g.index, "p_holm"] = holm(g["p_raw"].tolist())
+    gdf.round(5).to_csv(artifact_dir("logs") / "hair_coverage_decile_gaps.csv", index=False)
 
-    # Residual hair: re-screen each arm's test outputs with the frozen detector.
-    residual: list[dict] = []
-    try:
-        import cv2  # noqa: F401
-        from PIL import Image
-
-        from dm_ahr_vit.config import load_config
-        from dm_ahr_vit.hair.screening import detect_hair
-        from dm_ahr_vit.paths import data_root, processed_dir
-
-        cfg = load_config("configs/hair_screen.json")
-        test_ids = list(test_hair.index)
-        raw = data_root() / "raw" / "isic_212" / "images"
-        for arm in ("A", "B", "C"):
-            vals = []
-            for image_id in test_ids[:400]:
-                if arm == "A":
-                    p = raw / f"{image_id}.jpg"
-                else:
-                    p = processed_dir(arm) / f"{image_id}.png"
-                if not p.exists():
-                    continue
-                img = np.asarray(Image.open(p).convert("RGB"))
-                _, stats = detect_hair(img, cfg)
-                vals.append(stats["coverage"])
-            if vals:
-                residual.append({"arm": arm, "n": len(vals),
-                                 "mean_coverage": float(np.mean(vals)),
-                                 "present_rate": float(np.mean(
-                                     [v >= cfg["coverage_threshold"] for v in vals]))})
-    except Exception as exc:  # noqa: BLE001
-        log.warning("residual-hair screening skipped: %s", exc)
-        residual.append({"arm": "skipped", "reason": repr(exc)[:160]})
-
-    resid = pd.DataFrame(residual)
-    if "mean_coverage" in resid.columns:
-        resid.to_csv(artifact_dir("logs") / "hair_residual.csv", index=False)
-        log.info("residual hair after each arm\n%s", resid.to_string(index=False))
-
-    record_run("hair_coverage", gpu=None, seconds=0.0,
-               deciles=int(table["decile"].nunique()), arms=len(preds))
-    print(table.to_string(index=False))
+    # ---- 3. internal control: hair-absent (pass-through) images ----------------
+    absent = set(th.index[~th["hair_present"].astype(bool)])
+    groups = sorted(set(preds["A"].loc[preds["A"]["image_id"].isin(absent), "group_id"]))
+    W = draw_weights(len(groups), REPS, BSEED + 99)
+    counts = {a: arm_counts(preds[a], absent, groups) for a in arms}
+    boot = {a: balanced_accuracy(W, counts[a]) for a in arms}
+    pt = {a: float(balanced_accuracy(np.ones((1, len(groups))), counts[a])[0]) for a in arms}
+    control = {"n_images": len(absent), "n_groups": len(groups),
+               "statement": "hair-absent images are the original image in every arm (pass-through), so "
+                            "differences between arms here reflect training composition and seeds, not hair removal",
+               "balanced_accuracy": pt, "pairwise": {}}
+    for a, b in (("B", "A"), ("Astar", "A"), ("C", "A"), ("C", "Astar"), ("B", "Astar")):
+        if a in boot and b in boot:
+            d = boot[a] - boot[b]
+            lo, hi = np.nanpercentile(d, [2.5, 97.5])
+            control["pairwise"][f"{a}-{b}"] = {"gap": pt[a] - pt[b], "ci_low": float(lo), "ci_high": float(hi)}
+    save_json(control, artifact_dir("logs") / "hair_coverage_control.json")
+    record_run("hair_coverage_v2", gpu=None, seconds=0.0, arms=len(arms))
+    print(pd.DataFrame(dec_rows).round(3).to_string(index=False))
+    print(gdf.round(3).to_string(index=False))
+    print(control["pairwise"])
     return 0
 
 

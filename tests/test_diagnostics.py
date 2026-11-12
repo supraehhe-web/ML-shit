@@ -94,3 +94,19 @@ def test_branch_is_not_decided_without_evidence():
     assert dg.phase2_branch(ok, {"undertrained_pattern": True},
                             {"legacy": {"loss_jump": False}, "fixed": {"loss_jump": False}},
                             {"passed": True})["branch"] == "b"
+
+
+def test_sweep_choice_picks_smallest_valid_step_count():
+    rows = [{"steps": 50, "psnr": 15.0, "ssim": 0.2}, {"steps": 100, "psnr": 24.8, "ssim": 0.6},
+            {"steps": 250, "psnr": 26.0, "ssim": 0.68}, {"steps": 2000, "psnr": 26.8, "ssim": 0.7}]
+    out = dg.sweep_choice(rows, hairy_psnr=22.1, hairy_ssim=0.52)
+    assert out["chosen_steps"] == 250
+    none = dg.sweep_choice([{"steps": 100, "psnr": 14.0, "ssim": 0.1}, {"steps": 2000, "psnr": 14.5, "ssim": 0.1}], 22.1, 0.52)
+    assert none["chosen_steps"] is None
+
+
+def test_respace_choice_rule():
+    rows = [{"steps": 25, "psnr": 20.0, "ssim": 0.4}, {"steps": 50, "psnr": 25.5, "ssim": 0.6},
+            {"steps": 100, "psnr": 26.0, "ssim": 0.65}, {"steps": 250, "psnr": 26.2, "ssim": 0.66}]
+    assert dg.respace_choice(rows, 22.0, 0.5)["chosen_steps"] == 50
+    assert dg.respace_choice([{"steps": 25, "psnr": 15.0, "ssim": 0.1}], 22.0, 0.5)["chosen_steps"] is None

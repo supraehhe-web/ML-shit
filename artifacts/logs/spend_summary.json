@@ -1,0 +1,8 @@
+{
+  "basis": "wall-clock seconds x recorded Modal per-hour price; excludes start-up and storage",
+  "cap_usd": 5.5,
+  "estimated_usd_total": 0.746,
+  "jobs": 3,
+  "since": "2026-11-12T14:40:00+00:00",
+  "within_cap": true
+}

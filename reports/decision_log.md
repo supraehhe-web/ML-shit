@@ -413,3 +413,54 @@ reported as the legacy, misaligned measurement.
 Validation pairs only, 1,000 sampling steps, bf16, 50 pairs, seed index equal to
 the batch start, exactly as in `scripts/17_arm_c_diagnose.py` so the numbers are
 comparable with D19.
+
+## D24 - Phase 2 result (branch c) and a pre-registered respaced-sampler follow-up
+
+Written before the respaced-sampler job ran. The Phase 2 noise-prediction MSE
+test had already returned when this was written; nothing below depends on any
+test-set result.
+
+### What the Phase 2 evidence had shown at this point
+- Noise-prediction MSE on 100 validation pairs, identical noisy inputs, only the
+  conditioning value differing (`artifacts/logs/arm_c_v2_noise_mse.json`): the
+  first checkpoint is 54x worse under the upstream conditioning than under the
+  `t/T` value its trainer used; the released checkpoint is 11x worse under
+  `t/T` than under upstream conditioning; the retrained checkpoint matches
+  upstream. The D22 trained-wrongly rule (ratio >= 1.5 in both directions) is
+  met, so Phase 2 takes **branch (c), trainer bug**. This reverses D19
+  ("undertrained"): the D19 identity test used the released weights and so could
+  not detect a defect in our own training.
+- Consequence already acted on: the trainer was fixed (upstream conditioning, no
+  gradient clipping, in-memory pairs, no per-step host sync) and the diffusion
+  model was retrained at 20,000 iterations (`checkpoints/dmahr_fixed`).
+
+### Budget amendment
+D23 capped this revision at $5.50. The owner stated about $7 available on
+2026-11-12 14:41 UTC. Branch (c) requires regenerating Arm C and retraining the
+ViT, so the cap is raised to **$6.30** (at least $0.70 unspent). The run
+registry on the volume is unreliable under concurrent containers (writes race),
+so the spend ledger is built from the saved per-job logs, not the registry.
+
+### Pre-registered addition: respaced sampler
+Sampling at fewer steps in this repository re-derived a linear beta schedule
+over the shorter chain (D12). Because the denoiser is conditioned on the
+continuous level sqrt(alpha_bar), a re-derived short chain ends at a final noise
+level far above the trained one (unit test `tests/test_respacing.py`): at 1,000
+steps its final sqrt(alpha_bar) is about 12x the trained value, at 50 steps about
+130x. The 1,000-step ablation of Arm C therefore also had a sampler mismatch
+independent of the trainer. A **respaced** sampler visits the same noise-level
+path at a subset of timesteps (Nichol and Dhariwal, 2021) and is labelled an
+ablation of the paper's 2,000-step sampling, not the paper's method.
+
+- Validation only: released and retrained checkpoints, 50 validation pairs, S in
+  {25, 50, 100, 250}, bf16, seed fixed.
+- Rule: the chosen S is the smallest tested value that passes the valid-arm gate
+  of D22 (PSNR >= hairy + 3 dB and SSIM > hairy SSIM) **and** is within 1.0 dB of
+  the best tested PSNR for that checkpoint.
+- Run order if funds allow, fixed now: (1) **C-fixed** (retrained checkpoint,
+  leakage-clean, the confirmatory DM-AHR arm) at its chosen S; (2) C-released
+  only if money remains after C-fixed's ViT runs. C-fixed is launched only if
+  its validation gate passes and the throughput-measured estimate of
+  (sampling + 3 ViT trainings + evaluation + XAI) fits the remaining cap minus
+  $0.70. Otherwise it is recorded as not run with its estimate.
+- A respaced arm is compared against A* (128 px) as well as A.

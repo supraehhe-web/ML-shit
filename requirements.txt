@@ -14,3 +14,6 @@ pytest==8.3.4
 pyyaml==6.0.2
 gdown==5.2.0
 
+statsmodels==0.15.0
+patsy==1.0.3
+lpips==0.1.4

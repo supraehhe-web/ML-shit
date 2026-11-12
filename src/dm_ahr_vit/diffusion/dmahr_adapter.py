@@ -166,6 +166,57 @@ def postprocess(tensor: torch.Tensor) -> list[Image.Image]:
     return [Image.fromarray(a.transpose(1, 2, 0)) for a in arr]
 
 
+def respaced_betas(cfg: dict, steps: int) -> np.ndarray:
+    """Betas for a `steps`-step sampler that visits the same noise levels as the full schedule.
+
+    The denoiser is conditioned on the continuous level sqrt(alpha_bar), so a
+    shorter chain must follow the *same* cumulative-alpha path at a subset of
+    timesteps (Nichol and Dhariwal 2021, respacing). Re-deriving a linear
+    schedule with fewer steps instead ends at a different final noise level.
+    """
+    _ensure_path()
+    import model.sr3_modules.diffusion as dmod  # noqa: PLC0415
+
+    t_full = int(cfg["num_timesteps"])
+    bs = cfg["beta_schedule"]
+    betas = dmod.make_beta_schedule(schedule=bs["schedule"], n_timestep=t_full,
+                                    linear_start=bs["linear_start"], linear_end=bs["linear_end"])
+    betas = betas.detach().cpu().numpy() if isinstance(betas, torch.Tensor) else np.asarray(betas)
+    ac = np.cumprod(1.0 - betas.astype(np.float64))
+    keep = np.unique(np.round(np.linspace(0, t_full - 1, int(steps))).astype(int))
+    out, last = [], 1.0
+    for t in keep:
+        out.append(1.0 - ac[t] / last)
+        last = ac[t]
+    return np.asarray(out, dtype=np.float64)
+
+
+def set_schedule(net: torch.nn.Module, cfg: dict, steps: int, device: str,
+                 mode: str = "rederive") -> None:
+    """Install a sampling schedule. `rederive` = upstream behaviour (linear betas over `steps`);
+    `respaced` = the same noise-level path visited at `steps` timesteps."""
+    if mode not in ("rederive", "respaced"):
+        raise ValueError(f"mode must be 'rederive' or 'respaced', got {mode!r}")
+    bs = cfg["beta_schedule"]
+    spec = {"schedule": bs["schedule"], "linear_start": bs["linear_start"],
+            "linear_end": bs["linear_end"], "n_timestep": int(steps)}
+    if mode == "rederive":
+        net.num_timesteps = int(steps)
+        net.set_new_noise_schedule(spec, device=torch.device(device))
+    else:
+        _ensure_path()
+        import model.sr3_modules.diffusion as dmod  # noqa: PLC0415
+
+        betas = respaced_betas(cfg, steps)
+        original = dmod.make_beta_schedule
+        dmod.make_beta_schedule = lambda **_kw: betas
+        try:
+            net.set_new_noise_schedule(dict(spec, n_timestep=len(betas)), device=torch.device(device))
+        finally:
+            dmod.make_beta_schedule = original
+    net._sched_mode = mode
+
+
 @torch.no_grad()
 def clean_batch(
     net: torch.nn.Module,
@@ -175,19 +226,15 @@ def clean_batch(
     seed: int | None = None,
     num_timesteps: int | None = None,
     use_bf16: bool = False,
+    schedule_mode: str = "rederive",
 ) -> tuple[list[Image.Image], dict]:
     """Run DM-AHR on a batch of images. Returns cleaned images and run stats."""
     size = int(cfg["native_resolution"])
     x = preprocess(images, size).to(device)
-    if num_timesteps is not None and int(num_timesteps) != int(net.num_timesteps):
-        net.num_timesteps = int(num_timesteps)
-        net.set_new_noise_schedule(
-            {"schedule": cfg["beta_schedule"]["schedule"],
-             "linear_start": cfg["beta_schedule"]["linear_start"],
-             "linear_end": cfg["beta_schedule"]["linear_end"],
-             "n_timestep": int(num_timesteps)},
-            device=torch.device(device),
-        )
+    current_mode = getattr(net, "_sched_mode", "rederive")
+    if (num_timesteps is not None and int(num_timesteps) != int(net.num_timesteps)) \
+            or schedule_mode != current_mode:
+        set_schedule(net, cfg, int(num_timesteps or cfg["num_timesteps"]), device, schedule_mode)
     if seed is not None:
         torch.manual_seed(int(seed))
         torch.cuda.manual_seed_all(int(seed))
@@ -208,6 +255,7 @@ def clean_batch(
         "max": float(out.max()),
         "seed": seed,
         "bf16": use_bf16,
+        "schedule_mode": schedule_mode,
         "batch_returned": int(out.shape[0]),
         "batch_requested": int(x.shape[0]),
     }

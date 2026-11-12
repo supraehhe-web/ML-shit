@@ -190,3 +190,39 @@ def phase2_branch(mse: dict | None, trend: dict | None, warm: dict | None,
         return {"branch": "b", "status": "undertrained",
                 "action": "keep Arm C as under-resourced (paper-stated 20,000 iterations vs 725,000 released)"}
     return {"branch": None, "status": "inconclusive", "action": "report as inconclusive"}
+
+
+SWEEP_STEPS = (50, 100, 250, 500, 1000, 2000)
+SWEEP_TOLERANCE_DB = 1.0
+
+
+def sweep_choice(rows: list[dict], hairy_psnr: float, hairy_ssim: float) -> dict:
+    """D23 rule: smallest step count within 1 dB of the 2,000-step PSNR that also passes the valid-arm gate."""
+    rows = sorted(rows, key=lambda r: r["steps"])
+    ref = next((r for r in rows if r["steps"] == max(x["steps"] for x in rows)), None)
+    if ref is None:
+        return {"chosen_steps": None, "reason": "no rows"}
+    for r in rows:
+        valid = arm_is_valid(r["psnr"], r["ssim"], hairy_psnr, hairy_ssim)
+        if r["psnr"] >= ref["psnr"] - SWEEP_TOLERANCE_DB and valid["valid"]:
+            return {"chosen_steps": int(r["steps"]), "reference_steps": int(ref["steps"]),
+                    "reference_psnr": float(ref["psnr"]), "tolerance_db": SWEEP_TOLERANCE_DB,
+                    "valid": valid}
+    return {"chosen_steps": None, "reference_steps": int(ref["steps"]),
+            "reference_psnr": float(ref["psnr"]), "tolerance_db": SWEEP_TOLERANCE_DB,
+            "reason": "no step count both within tolerance of the reference and valid"}
+
+
+RESPACE_STEPS = (25, 50, 100, 250)
+
+
+def respace_choice(rows: list[dict], hairy_psnr: float, hairy_ssim: float) -> dict:
+    """D24 rule: smallest tested step count that passes the valid-arm gate and is within 1 dB of the best tested PSNR."""
+    rows = sorted(rows, key=lambda r: r["steps"])
+    best = max(r["psnr"] for r in rows)
+    for r in rows:
+        v = arm_is_valid(r["psnr"], r["ssim"], hairy_psnr, hairy_ssim)
+        if v["valid"] and r["psnr"] >= best - SWEEP_TOLERANCE_DB:
+            return {"chosen_steps": int(r["steps"]), "best_tested_psnr": float(best), "valid": v}
+    return {"chosen_steps": None, "best_tested_psnr": float(best),
+            "reason": "no tested step count passes the valid-arm gate within 1 dB of the best"}

@@ -38,7 +38,7 @@ from dm_ahr_vit.utils import record_run, setup_logging  # noqa: E402
 
 log = setup_logging()
 SEC_PER_IMG_STEP = 4.35 / 2000.0
-SEC_PER_ITER = 0.055
+SEC_PER_ITER = 0.095
 LOGS = lambda name: artifact_dir("logs") / name  # noqa: E731
 
 
@@ -235,12 +235,75 @@ def stage_overfit(args, cfg, device):
     print(json.dumps(res, indent=1))
 
 
+# ---------------------------------------------------------------- stage: sweep
+def stage_sweep(args, cfg, device):
+    """D23: step-count sweep of the released checkpoint on validation pairs."""
+    from dm_ahr_vit.diffusion.dmahr_adapter import load_model
+
+    P = paths()
+    df = val_pairs(args.score_n)
+    hairy, refs = load_images(df)
+    floor = [dg.psnr_ssim(h, r) for h, r in zip(hairy, refs)]
+    fp, fs = float(np.mean([f["psnr"] for f in floor])), float(np.mean([f["ssim"] for f in floor]))
+    net = load_model(cfg, P["released"], device=device)
+    rows = []
+    for st in dg.SWEEP_STEPS:
+        t0 = time.time()
+        outs = sample(net, hairy, cfg, st, args.bf16, device, bs=len(hairy))
+        secs = time.time() - t0
+        m = [dg.psnr_ssim(o, r) for o, r in zip(outs, refs)]
+        rows.append({"steps": st, "n": len(outs), "psnr": float(np.mean([x["psnr"] for x in m])),
+                     "ssim": float(np.mean([x["ssim"] for x in m])),
+                     "lpips": float(np.mean(dg.lpips_scores(outs, refs, device=device))),
+                     "seconds": secs, "seconds_per_image": secs / len(outs)})
+        log.info("sweep %d steps: PSNR %.2f SSIM %.3f (%.0fs)", st, rows[-1]["psnr"], rows[-1]["ssim"], secs)
+    out = {"n_pairs": len(df), "hairy_floor": {"psnr": fp, "ssim": fs}, "bf16": args.bf16,
+           "rows": rows, "choice": dg.sweep_choice(rows, fp, fs)}
+    save_json(out, LOGS("arm_c_v2_step_sweep.json"))
+    print(json.dumps(out["choice"], indent=1))
+
+
+# ------------------------------------------------------------- stage: respace
+def stage_respace(args, cfg, device):
+    """D24: respaced short samplers for the released and the fixed checkpoints, validation pairs."""
+    from dm_ahr_vit.diffusion.dmahr_adapter import clean_batch, load_model
+
+    P = paths()
+    df = val_pairs(args.score_n)
+    hairy, refs = load_images(df)
+    floor = [dg.psnr_ssim(h, r) for h, r in zip(hairy, refs)]
+    fp, fs = float(np.mean([f["psnr"] for f in floor])), float(np.mean([f["ssim"] for f in floor]))
+    ckpts = {"released": P["released"], "ours_fixed": P["fixed_dir"] / "final_gen.pth"}
+    out = {"n_pairs": len(df), "hairy_floor": {"psnr": fp, "ssim": fs}, "bf16": args.bf16,
+           "steps_tested": list(dg.RESPACE_STEPS), "checkpoints": {}}
+    for name, path in ckpts.items():
+        net = load_model(cfg, path, device=device)
+        rows = []
+        for st in dg.RESPACE_STEPS:
+            t0 = time.time()
+            outs, _ = clean_batch(net, hairy, cfg, device=device, seed=0, num_timesteps=st,
+                                  use_bf16=args.bf16, schedule_mode="respaced")
+            secs = time.time() - t0
+            m = [dg.psnr_ssim(o, r) for o, r in zip(outs, refs)]
+            rows.append({"steps": st, "n": len(outs), "psnr": float(np.mean([x["psnr"] for x in m])),
+                         "ssim": float(np.mean([x["ssim"] for x in m])),
+                         "lpips": float(np.mean(dg.lpips_scores(outs, refs, device=device))),
+                         "seconds": secs, "seconds_per_image": secs / len(outs)})
+            log.info("respaced %s %d steps: PSNR %.2f SSIM %.3f", name, st, rows[-1]["psnr"], rows[-1]["ssim"])
+        out["checkpoints"][name] = {"rows": rows, "choice": dg.respace_choice(rows, fp, fs)}
+        del net
+    save_json(out, LOGS("arm_c_v2_respaced.json"))
+    print(json.dumps({k: v["choice"] for k, v in out["checkpoints"].items()}, indent=1))
+
+
 # -------------------------------------------------------------- stage: decide
 def stage_decide(_args=None, _cfg=None, _device=None):
     def load(name):
         p = LOGS(name)
         return json.loads(p.read_text()) if p.exists() else None
 
+    sweep = load("arm_c_v2_step_sweep.json")
+    respaced = load("arm_c_v2_respaced.json")
     mse, sc, ws, ov = (load("arm_c_v2_noise_mse.json"), load("arm_c_v2_scores.json"),
                        load("arm_c_v2_warm_start.json"), load("arm_c_v2_overfit.json"))
     branch = dg.phase2_branch(mse["evidence"] if mse else None,
@@ -250,7 +313,9 @@ def stage_decide(_args=None, _cfg=None, _device=None):
                                                 "warm_start": bool(ws), "overfit": bool(ov)},
            "static_audit": {"ema": "upstream marks EMA 'not used now'; no EMA code upstream or in our trainer",
                             "ema_bug_branch_a": "ruled out by audit (no EMA weights exist)"},
-           "validity_of_fixed_arm": sc.get("fixed_arm_validity") if sc else None}
+           "validity_of_fixed_arm": sc.get("fixed_arm_validity") if sc else None,
+           "step_sweep_choice": sweep["choice"] if sweep else None,
+           "respaced_choice": {k: v["choice"] for k, v in respaced["checkpoints"].items()} if respaced else None}
     save_json(out, LOGS("arm_c_diagnosis_v2.json"))
     print(json.dumps(out, indent=1))
 
@@ -258,7 +323,7 @@ def stage_decide(_args=None, _cfg=None, _device=None):
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--stage", required=True,
-                    choices=["mse", "score", "warm_start", "overfit", "decide", "all"])
+                    choices=["mse", "score", "warm_start", "overfit", "sweep", "respace", "decide", "all"])
     ap.add_argument("--pairs-n", type=int, default=100)
     ap.add_argument("--score-n", type=int, default=50)
     ap.add_argument("--steps", type=int, default=1000)
@@ -281,6 +346,8 @@ def main() -> int:
         "score": (2 + n_fixed) * args.score_n * args.steps * SEC_PER_IMG_STEP * f + 120.0,
         "warm_start": 2 * args.warm_iters * SEC_PER_ITER + 180.0,
         "overfit": args.overfit_iters * SEC_PER_ITER + 8 * args.steps * SEC_PER_IMG_STEP * f + 60.0,
+        "sweep": sum(dg.SWEEP_STEPS) * 0.11 + 60.0,
+        "respace": 2 * sum(dg.RESPACE_STEPS) * 0.11 + 90.0,
     }
     stages = list(est) if args.stage == "all" else [args.stage]
     total = sum(est[s] for s in stages)
@@ -295,7 +362,7 @@ def main() -> int:
     cfg = load_config("configs/dmahr.json")
     t0 = time.time()
     for s in stages:
-        {"mse": stage_mse, "score": stage_score, "warm_start": stage_warm_start,
+        {"mse": stage_mse, "score": stage_score, "warm_start": stage_warm_start, "sweep": stage_sweep, "respace": stage_respace,
          "overfit": stage_overfit}[s](args, cfg, "cuda")
     secs = time.time() - t0
     record_run("arm_c_diagnose_v2", gpu=args.gpu, seconds=secs, stage=args.stage,

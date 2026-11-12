@@ -1,0 +1,38 @@
+{
+  "balanced_accuracy": {
+    "A": 0.6728282828282829,
+    "Astar": 0.5795959595959596,
+    "B": 0.7455555555555556,
+    "C": 0.4988888888888889
+  },
+  "n_groups": 186,
+  "n_images": 186,
+  "pairwise": {
+    "Astar-A": {
+      "ci_high": -0.000552208835341433,
+      "ci_low": -0.19448201371278304,
+      "gap": -0.09323232323232333
+    },
+    "B-A": {
+      "ci_high": 0.0981063990569497,
+      "ci_low": -0.014634758546380655,
+      "gap": 0.07272727272727275
+    },
+    "B-Astar": {
+      "ci_high": 0.24596175707687787,
+      "ci_low": 0.03771738622131124,
+      "gap": 0.16595959595959608
+    },
+    "C-A": {
+      "ci_high": -0.0866697724370138,
+      "ci_low": -0.28011478656681416,
+      "gap": -0.173939393939394
+    },
+    "C-Astar": {
+      "ci_high": 0.016621956661333565,
+      "ci_low": -0.18187854295216274,
+      "gap": -0.08070707070707067
+    }
+  },
+  "statement": "hair-absent images are the original image in every arm (pass-through), so differences between arms here reflect training composition and seeds, not hair removal"
+}

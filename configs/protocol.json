@@ -20,6 +20,14 @@
     "x1_rollout_overlap20"
   ],
   "planned_comparisons": [["A", "B"], ["A", "C"], ["B", "C"]],
+  "amendment_d22": {
+    "note": "Post-review amendment recorded in reports/decision_log.md (D22) before any new result. 'planned_comparisons' above is the original pre-registration and is kept unchanged.",
+    "confirmatory_comparisons": [["A", "B"], ["A", "Cfixed"], ["B", "Cfixed"]],
+    "confirmatory_holm_family_size": 3,
+    "appendix_legacy_c_comparisons": [["A", "C"], ["B", "C"]],
+    "secondary_control_comparisons": [["A", "Astar"], ["C", "Astar"], ["Cfixed", "Astar"]],
+    "exploratory_comparisons": [["A", "Creleased"], ["B", "Creleased"], ["Creleased", "Astar"]]
+  },
   "bootstrap_replicates": 10000,
   "bootstrap_seed": 20260101,
   "research_only_statement": "Research prototype only. Not clinically validated and not intended for diagnosis or patient care."

@@ -3,9 +3,14 @@
     "paired_psnr",
     "paired_ssim",
     "test_macro_f1",
-    "x1_gradcam_overlap20",
-    "x1_rollout_overlap20"
+    "test_recall_df",
+    "test_recall_mel"
   ],
-  "rows": 22,
-  "seconds": 33.351
+  "families": [
+    "appendix_legacy_C",
+    "confirmatory",
+    "secondary_control"
+  ],
+  "rows": 36,
+  "seconds": 10.181
 }

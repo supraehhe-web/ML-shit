@@ -39,6 +39,7 @@ image = (
         "tqdm==4.67.1",
         "requests==2.32.3",
         "gdown==5.2.0",
+        "lpips==0.1.4",
     )
     .env(
         {
@@ -218,6 +219,22 @@ def dmahr_train(overfit: bool = False):
 def arm_c_diagnose(identity_n: int = 50, pairs_n: int = 100):
     return _run("17_arm_c_diagnose.py",
                 ["--identity-n", str(identity_n), "--pairs-n", str(pairs_n)])
+
+
+# Generic entry points used by the post-review revision. Every script they run
+# gates its own spend through dm_ahr_vit.budget and requires --budget-usd.
+@app.function(image=image, gpu="A100-40GB", cpu=4, memory=16384, timeout=21600, volumes={"/vol": vol})
+def gpu_script(script: str, args: str = ""):
+    import shlex
+
+    return _run(script, shlex.split(args))
+
+
+@app.function(image=image, cpu=4, memory=16384, timeout=7200, volumes={"/vol": vol})
+def cpu_script(script: str, args: str = ""):
+    import shlex
+
+    return _run(script, shlex.split(args))
 
 
 @app.function(image=image, gpu="A100-80GB", timeout=86400, volumes={"/vol": vol})

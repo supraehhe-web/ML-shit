@@ -22,4 +22,7 @@
 {"arm": "C", "gpu": "cuda", "host": "modal", "job": "xai", "n": 1502, "pid": 1647, "python": "3.11.12", "seconds": 94.55, "seed": 2026, "status": "ok", "timestamp": "2026-11-11T23:16:39+00:00"}
 {"delta": 0.0, "gpu": "cuda", "host": "modal", "job": "reproduction_check", "pid": 5, "python": "3.11.12", "reproduced": true, "seconds": 407.71, "status": "ok", "timestamp": "2026-11-12T07:12:50+00:00"}
 {"gpu": "cuda", "host": "modal", "identity": 100, "job": "arm_c_diagnose", "outcome": "b", "pairs": 100, "pid": 5, "python": "3.11.12", "seconds": 1744.61, "status": "ok", "timestamp": "2026-11-12T12:28:42+00:00"}
-{"gpu": null, "host": "modal", "inventory": 179, "job": "finalize", "pid": 42656, "python": "3.12.3", "seconds": 0.12, "status": "ok", "timestamp": "2026-11-12T12:32:22+00:00"}
+{"estimated_usd": 0.0, "gpu": "A100-40GB", "host": "modal", "job": "paper_reproduction", "pid": 5, "python": "3.11.12", "seconds": 5.9, "source": "vendored DERMAHAIR akiec subset only (10", "status": "ok", "timestamp": "2026-11-12T14:45:56+00:00"}
+{"estimated_usd": 0.61, "gpu": "A100-40GB", "host": "modal", "job": "paper_reproduction", "pid": 5, "python": "3.11.12", "seconds": 1039.6, "source": "vendored DERMAHAIR akiec subset only (10", "status": "ok", "timestamp": "2026-11-12T15:14:00+00:00"}
+{"estimated_usd": 0.14, "gpu": "A100-40GB", "host": "modal", "job": "arm_c_diagnose_v2", "pid": 5, "python": "3.11.12", "seconds": 233.27, "stage": "overfit", "status": "ok", "timestamp": "2026-11-12T15:20:41+00:00"}
+{"arm": "A", "extras": true, "gpu": "cuda", "host": "modal", "job": "xai_v2", "n": 1502, "pid": 6, "python": "3.11.12", "seconds": 259.76, "seed": 42, "status": "ok", "timestamp": "2026-11-12T15:25:32+00:00"}

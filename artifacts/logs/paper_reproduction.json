@@ -1,0 +1,69 @@
+{
+  "bf16": true,
+  "checkpoint": "I725000_E1083_gen.pth",
+  "estimated_usd": 0.61,
+  "identity_n": 50,
+  "measured_seconds_per_image_step": {
+    "128": 0.0022925074100494385
+  },
+  "n_pairs": 101,
+  "note": "hairless references may contain natural hair; they were not filtered",
+  "paper_reference": {
+    "citation": "DM-AHR paper, Cancers 2024, 16, 2947",
+    "lpips": 0.0128,
+    "psnr": 41.04,
+    "ssim": 0.966
+  },
+  "seconds": 1039.6,
+  "settings": {
+    "res128_steps1000": {
+      "floor": {
+        "lpips": 0.5499353696878003,
+        "psnr": 19.372937055648293,
+        "ssim": 0.5971180281197652
+      },
+      "identity": {
+        "lpips": 0.009892818985972553,
+        "psnr": 33.7337043560985,
+        "ssim": 0.9907394770430181
+      },
+      "n_identity": 50,
+      "n_output": 101,
+      "output": {
+        "lpips": 0.07041805843352386,
+        "psnr": 31.42304514404515,
+        "ssim": 0.915384302335918
+      },
+      "res": 128,
+      "steps": 1000
+    },
+    "res128_steps2000": {
+      "floor": {
+        "lpips": 0.5499353696878003,
+        "psnr": 19.372937055648293,
+        "ssim": 0.5971180281197652
+      },
+      "identity": {
+        "lpips": 0.009625316362362355,
+        "psnr": 40.60563817303964,
+        "ssim": 0.9919708256145092
+      },
+      "n_identity": 50,
+      "n_output": 101,
+      "output": {
+        "lpips": 0.06549630586823246,
+        "psnr": 34.917119372358584,
+        "ssim": 0.9168519109642167
+      },
+      "res": 128,
+      "steps": 2000
+    }
+  },
+  "source": "vendored DERMAHAIR akiec subset only (101 pairs; partial: one class)",
+  "verdict": {
+    "adapter_validated": false,
+    "mean_psnr": 34.917119372358584,
+    "rule": "mean PSNR >= 39.04 dB (within 2.0 dB of 41.04)",
+    "statement": "paper numbers not reproduced; adapter and checkpoint loading under investigation"
+  }
+}

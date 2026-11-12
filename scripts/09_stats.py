@@ -1,4 +1,4 @@
-"""Assemble the statistical comparison table.
+"""Assemble the statistical comparison table (families per decision log D22).
 
 Paired lesion-group bootstrap with the same resample shared across arms and
 seeds, Holm correction across the three planned comparisons per endpoint, plus
@@ -207,13 +207,46 @@ def classification_endpoint(seeds: list[int], subset: str, reps: int, bseed: int
             correct_long.extend({"arm": arm, "group_id": g, "value": float(v)}
                                 for g, v in avg.items())
 
+    recall_dists = {}
+    for k_name in ("mel", "df"):
+        k = CLASSES.index(k_name)
+        for arm in available:
+            per = []
+            for seed in seeds:
+                sub = preds[arm][(preds[arm]["seed"] == seed) & (preds[arm]["image_id"].isin(common))]
+                if sub.empty:
+                    continue
+                c = group_class_counts(sub, groups)
+                per.append(_safe_ratio(W @ c["tp"][:, k], W @ (c["tp"][:, k] + c["fn"][:, k])))
+            if per:
+                recall_dists[(k_name, arm)] = np.mean(np.vstack(per), axis=0)
     rows = []
+    for k_name in ("mel", "df"):
+        for a, b in comparisons:
+            if (k_name, a) not in recall_dists or (k_name, b) not in recall_dists:
+                continue
+            obs = {}
+            for arm in (a, b):
+                vals = []
+                for seed in seeds:
+                    sub = preds[arm][(preds[arm]["seed"] == seed) & (preds[arm]["label"] == k_name)
+                                     & (preds[arm]["image_id"].isin(common))]
+                    vals.append(float((sub["label"] == sub["pred"]).mean()) if len(sub) else float("nan"))
+                obs[arm] = float(np.nanmean(vals))
+            rows.append({
+                "endpoint": f"test_recall_{k_name}", "subset": subset,
+                "comparison": f"{a}-{b}", "arm_a": a, "arm_b": b,
+                "arm_a_mean": obs[a], "arm_b_mean": obs[b], "n_images": len(common),
+                "n_groups": len(groups), "replicates": reps,
+                **compare(recall_dists[(k_name, a)], recall_dists[(k_name, b)]),
+                "test": "lesion-group paired bootstrap, percentile CI, two-sided",
+            })
     for a, b in comparisons:
         if a not in dists or b not in dists:
             continue
+        # Cohen's dz needs a per-unit paired difference. Macro-F1 does not
+        # decompose over lesion groups, so no effect size is reported for it.
         diffs = None
-        if a in per_group_f1 and b in per_group_f1:
-            diffs = per_group_f1[a] - per_group_f1[b]
         rows.append({
             "endpoint": "test_macro_f1",
             "subset": subset,
@@ -228,7 +261,9 @@ def classification_endpoint(seeds: list[int], subset: str, reps: int, bseed: int
             **compare(dists[a], dists[b], paired_diffs=diffs),
             "test": "lesion-group paired bootstrap, percentile CI, two-sided",
         })
-    rows = attach_wilcoxon(rows, pd.DataFrame(correct_long), comparisons)
+    # The Wilcoxon test is on per-lesion accuracy, so it only accompanies macro-F1 rows.
+    attach_wilcoxon([r for r in rows if r["endpoint"] == "test_macro_f1"],
+                    pd.DataFrame(correct_long), comparisons)
     save_json(
         {"subset": subset, "observed_macro_f1": observed,
          "arms": available, "n_images": len(common), "n_groups": len(groups)},
@@ -328,7 +363,8 @@ def paired_column_endpoint(df: pd.DataFrame, col_a: str, col_b: str, endpoint: s
 
 
 def xai_rows(metric: str, reps: int, bseed: int, comparisons: list) -> list:
-    files = sorted(artifact_dir("logs").glob("xai_localization_*.csv"))
+    # v2 = masks aligned to the model view; the v1 files are the legacy, misaligned run.
+    files = sorted(artifact_dir("logs").glob("xai_localization_v2_*_X1.csv"))
     if not files:
         return []
     df = pd.concat([pd.read_csv(f) for f in files], ignore_index=True)
@@ -350,19 +386,47 @@ def xai_rows(metric: str, reps: int, bseed: int, comparisons: list) -> list:
     W = draw_counts(len(groups), reps, bseed)
     res = bootstrap_group_means(per_group, metric, "arm", W, groups, gidx)
     rows = []
+    wide = per_group.pivot(index="group_id", columns="arm", values=metric)
     for a, b in comparisons:
         if a not in res["dists"] or b not in res["dists"]:
             continue
+        # dz on the per-lesion paired differences, the unit the bootstrap resamples.
+        pair = (wide[a] - wide[b]).dropna().to_numpy(dtype=float)
         rows.append({
             "endpoint": f"x1_{metric}", "subset": "test_x1",
             "comparison": f"{a}-{b}", "arm_a": a, "arm_b": b,
             "arm_a_mean": res["obs"][a], "arm_b_mean": res["obs"][b],
             "n_images": int((df["arm"] == a).sum()),
             "n_groups": len(groups), "replicates": reps,
-            **compare(res["dists"][a], res["dists"][b]),
+            **compare(res["dists"][a], res["dists"][b], paired_diffs=pair),
             "test": "lesion-group paired bootstrap, percentile CI, two-sided",
         })
     return attach_wilcoxon(rows, _long_from_arm(per_group, metric, "arm"), comparisons)
+
+
+CONFIRMATORY_M = 3
+
+
+def family_of(a: str, b: str) -> str:
+    """Analysis family of a comparison (see decision log D22)."""
+    arms = {a, b}
+    if "C" in arms:
+        return "appendix_legacy_C"        # failed reproduction, exploratory only
+    if "Creleased" in arms:
+        return "exploratory_C_released"   # checkpoint probably saw our clean images
+    if "Astar" in arms:
+        return "secondary_control"        # resolution control
+    return "confirmatory"
+
+
+def holm_padded(pvals: list, family: str) -> list:
+    """Holm inside a family. The confirmatory family keeps m = 3 even if some of
+    its comparisons were not run, so the correction is not loosened after the fact."""
+    if family != "confirmatory":
+        return holm(pvals)
+    real = [p for p in pvals if p is not None and not np.isnan(p)]
+    pad = [1.0] * max(0, CONFIRMATORY_M - len(real))
+    return holm(list(pvals) + pad)[:len(pvals)]
 
 
 def main() -> int:
@@ -370,23 +434,16 @@ def main() -> int:
     seeds = list(protocol["seeds"])
     reps = int(protocol["bootstrap_replicates"])
     bseed = int(protocol["bootstrap_seed"])
-    comparisons = [tuple(c) for c in protocol["planned_comparisons"]]
+    conf = [tuple(c) for c in protocol["amendment_d22"]["confirmatory_comparisons"]]
+    legacy = [tuple(c) for c in protocol["amendment_d22"]["appendix_legacy_c_comparisons"]]
+    sec = [tuple(c) for c in protocol["amendment_d22"]["secondary_control_comparisons"]]
+    expl = [tuple(c) for c in protocol["amendment_d22"]["exploratory_comparisons"]]
+    all_cmps = conf + legacy + sec + expl
     out: list = []
 
     with timed("stats", log) as t:
         for subset in ("full", "hair_present"):
-            out += classification_endpoint(seeds, subset, reps, bseed, comparisons)
-
-        # Secondary control: A vs A* isolates the 128px resolution change that
-        # Arm C introduces. Reported separately from the planned family.
-        for subset in ("full", "hair_present"):
-            out += classification_endpoint(
-                seeds, subset, reps, bseed, [("A", "Astar")])
-        # Secondary control: C vs A* compares the diffusion arm against the
-        # resolution-matched original, so the 128px round-trip is held constant.
-        for subset in ("full", "hair_present"):
-            out += classification_endpoint(
-                seeds, subset, reps, bseed, [("C", "Astar")])
+            out += classification_endpoint(seeds, subset, reps, bseed, all_cmps)
 
         p = artifact_dir("logs") / "paired_psnr_ssim_test.csv"
         if p.exists():
@@ -395,44 +452,44 @@ def main() -> int:
                 out += paired_column_endpoint(
                     df, f"B_{metric}", f"hairy_input_{metric}",
                     f"paired_{metric}", reps, bseed, [("B", "hairy input")])
-                if f"C_{metric}" in df.columns and df[f"C_{metric}"].notna().any():
-                    out += paired_column_endpoint(
-                        df, f"C_{metric}", f"B_{metric}",
-                        f"paired_{metric}", reps, bseed, [("C", "B")])
-                    out += paired_column_endpoint(
-                        df, f"C_{metric}", f"hairy_input_{metric}",
-                        f"paired_{metric}", reps, bseed, [("C", "hairy input")])
+                for arm in ("C", "Cfixed", "Creleased"):
+                    col = f"{arm}_{metric}"
+                    if col in df.columns and df[col].notna().any():
+                        out += paired_column_endpoint(
+                            df, col, f"B_{metric}", f"paired_{metric}", reps, bseed, [(arm, "B")])
+                        out += paired_column_endpoint(
+                            df, col, f"hairy_input_{metric}", f"paired_{metric}", reps, bseed,
+                            [(arm, "hairy input")])
 
-        for metric in ("gradcam_overlap20", "rollout_overlap20"):
-            out += xai_rows(metric, reps, bseed, comparisons)
+        for metric in ("gradcam_overlap20", "rollout_overlap20", "gradcam_pointing",
+                       "rollout_pointing", "gradcam_overlap_norm", "rollout_overlap_norm"):
+            out += xai_rows(metric, reps, bseed, all_cmps)
 
     if not out:
         log.error("no statistical comparisons could be computed")
         return 1
     table = pd.DataFrame(out)
-    # A-A* is a secondary resolution control, not one of the three planned
-    # comparisons, so it gets its own Holm family and cannot inflate the
-    # planned family's correction.
-    table["family"] = np.where(
-        table["comparison"].str.contains("Astar"), "secondary_control", "planned")
+    table["family"] = [family_of(a, b) for a, b in zip(table["arm_a"], table["arm_b"])]
+    primary = set(protocol["primary_endpoints"])
+    table["endpoint_tier"] = np.where(table["endpoint"].isin(primary), "primary", "secondary")
     table["p_holm"] = np.nan
-    for _, grp in table.groupby(["endpoint", "subset", "family"]):
-        table.loc[grp.index, "p_holm"] = holm(grp["p_raw"].tolist())
-    cols = ["endpoint", "subset", "family", "comparison", "arm_a", "arm_b", "arm_a_mean",
-            "arm_b_mean", "difference", "ci_low", "ci_high", "p_raw", "p_holm",
-            "effect_size_dz", "wilcoxon_p_raw", "wilcoxon_p_holm", "wilcoxon_statistic",
+    table["wilcoxon_p_holm"] = np.nan
+    table["holm_m"] = np.nan
+    for (_, _, fam), grp in table.groupby(["endpoint", "subset", "family"]):
+        table.loc[grp.index, "p_holm"] = holm_padded(grp["p_raw"].tolist(), fam)
+        if "wilcoxon_p_raw" in table.columns:
+            table.loc[grp.index, "wilcoxon_p_holm"] = holm_padded(grp["wilcoxon_p_raw"].tolist(), fam)
+        table.loc[grp.index, "holm_m"] = CONFIRMATORY_M if fam == "confirmatory" else len(grp)
+    cols = ["endpoint", "endpoint_tier", "subset", "family", "comparison", "arm_a", "arm_b",
+            "arm_a_mean", "arm_b_mean", "difference", "ci_low", "ci_high", "p_raw", "p_holm",
+            "holm_m", "effect_size_dz", "wilcoxon_p_raw", "wilcoxon_p_holm", "wilcoxon_statistic",
             "wilcoxon_n_groups", "n_images", "n_groups", "replicates", "test"]
     table = table[[c for c in cols if c in table.columns]]
-    table = table.sort_values(["endpoint", "subset", "comparison"])
-    # A clear p-value on a tiny difference is not a meaningful finding. Flag it
-    # so the prose cannot call a negligible effect important.
-    table["negligible"] = (
-        (table["p_holm"] < 0.05)
-        & (table["effect_size_dz"].abs() < 0.2)
-    )
+    table = table.sort_values(["family", "endpoint", "subset", "comparison"])
     table.to_csv(artifact_dir("logs") / "statistical_comparisons.csv", index=False)
     save_json({"seconds": t["seconds"], "rows": int(len(table)),
-               "endpoints": sorted(table["endpoint"].unique().tolist())},
+               "endpoints": sorted(table["endpoint"].unique().tolist()),
+               "families": sorted(table["family"].unique().tolist())},
               artifact_dir("logs") / "stats_summary.json")
     record_run("stats", gpu=None, seconds=t["seconds"], rows=int(len(table)))
     print(table.to_string(index=False))
@@ -441,7 +498,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
-
-
-

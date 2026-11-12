@@ -1,0 +1,48 @@
+{
+  "bf16": false,
+  "checkpoint": "I725000_E1083_gen.pth",
+  "estimated_usd": 0.07,
+  "identity_n": 2,
+  "measured_seconds_per_image_step": {
+    "128": 0.0022478954792022705
+  },
+  "n_pairs": 20,
+  "note": "hairless references may contain natural hair; they were not filtered",
+  "paper_reference": {
+    "citation": "DM-AHR paper, Cancers 2024, 16, 2947",
+    "lpips": 0.0128,
+    "psnr": 41.04,
+    "ssim": 0.966
+  },
+  "seconds": 113.3,
+  "settings": {
+    "res128_steps2000": {
+      "floor": {
+        "lpips": 0.5520374238491058,
+        "psnr": 18.719498506560335,
+        "ssim": 0.5498652580973851
+      },
+      "identity": {
+        "lpips": 0.003867028164677322,
+        "psnr": 37.61670761425777,
+        "ssim": 0.9945610202332524
+      },
+      "n_identity": 2,
+      "n_output": 20,
+      "output": {
+        "lpips": 0.06559140954632312,
+        "psnr": 34.923891705870595,
+        "ssim": 0.9081894890129328
+      },
+      "res": 128,
+      "steps": 2000
+    }
+  },
+  "source": "vendored DERMAHAIR akiec subset only (101 pairs; partial: one class)",
+  "verdict": {
+    "adapter_validated": false,
+    "mean_psnr": 34.923891705870595,
+    "rule": "mean PSNR >= 39.04 dB (within 2.0 dB of 41.04)",
+    "statement": "paper numbers not reproduced; adapter and checkpoint loading under investigation"
+  }
+}

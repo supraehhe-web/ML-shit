@@ -20,29 +20,33 @@ log = setup_logging()
 
 
 class PairedDataset(Dataset):
-    """(hairy, hairless) pairs at native resolution, in [-1, 1]."""
+    """(hairy, hairless) pairs at native resolution, in [-1, 1].
+
+    Pairs are decoded and resized once at construction and kept in memory (about
+    100 KB per pair at 128 px). Re-decoding two PNGs per sample on a throttled
+    container made the first trainer several times slower than the GPU needed.
+    """
 
     def __init__(self, pairs: pd.DataFrame, size: int = 128):
         self.pairs = pairs.reset_index(drop=True)
         self.size = size
+        self._hr: list[np.ndarray] = []
+        self._cond: list[np.ndarray] = []
+        for _, r in self.pairs.iterrows():
+            self._hr.append(self._load(r["reference_path"]))
+            self._cond.append(self._load(r["hairy_path"]))
+
+    def _load(self, path) -> np.ndarray:
+        return np.asarray(
+            Image.open(path).convert("RGB").resize((self.size, self.size), Image.Resampling.BICUBIC),
+            dtype=np.float32,
+        )
 
     def __len__(self) -> int:
         return len(self.pairs)
 
     def __getitem__(self, idx: int):
-        r = self.pairs.iloc[idx]
-        hr = np.asarray(
-            Image.open(r["reference_path"]).convert("RGB").resize(
-                (self.size, self.size), Image.Resampling.BICUBIC
-            ),
-            dtype=np.float32,
-        )
-        cond = np.asarray(
-            Image.open(r["hairy_path"]).convert("RGB").resize(
-                (self.size, self.size), Image.Resampling.BICUBIC
-            ),
-            dtype=np.float32,
-        )
+        hr, cond = self._hr[idx], self._cond[idx]
         if idx % 2 == 1:
             hr, cond = hr[:, ::-1].copy(), cond[:, ::-1].copy()
         return {
@@ -58,7 +62,7 @@ def _infinite(loader):
 
 
 @torch.no_grad()
-def val_loss(net, loader, device: str, timesteps=(200, 800, 1400, 1900),
+def val_loss(net, loader, device: str, timesteps=None,
              mode: str = "upstream", seed: int = 0) -> float:
     """Mean noise-prediction L1 on validation pairs at fixed steps and fixed noise."""
     net.eval()
@@ -67,7 +71,7 @@ def val_loss(net, loader, device: str, timesteps=(200, 800, 1400, 1900),
     for batch in loader:
         hr = batch["HR"].to(device)
         cond = batch["SR"].to(device)
-        for t in timesteps:
+        for t in sorted({max(1, int(round(f * net.num_timesteps))) for f in (0.1, 0.4, 0.7, 0.95)} if timesteps is None else {int(t) for t in timesteps}):
             noise = torch.randn(hr.shape, generator=gen).to(device)
             losses.append(fixed_level_error(net, hr, cond, int(t), noise, mode)["l1"])
     net.train()
@@ -133,8 +137,8 @@ def train(
     val_ds = PairedDataset(val_pairs, int(cfg["native_resolution"]))
     bs = int(cfg["train"]["batch_size"])
     train_loader = DataLoader(train_ds, batch_size=min(bs, max(1, len(train_ds))), shuffle=True,
-                              drop_last=len(train_ds) >= bs, num_workers=4, pin_memory=True)
-    val_loader = DataLoader(val_ds, batch_size=bs, shuffle=False, num_workers=2)
+                              drop_last=len(train_ds) >= bs, num_workers=0)
+    val_loader = DataLoader(val_ds, batch_size=bs, shuffle=False, num_workers=0)
 
     state_path = out_dir / ("overfit_state.pt" if overfit else "train_state.pt")
     start = 0
@@ -182,6 +186,19 @@ def train(
     ckpt_every = int(cfg["train"]["checkpoint_every"])
     val_every = int(cfg["train"]["val_every"])
     t0 = time.time()
+    pending: list[tuple[int, torch.Tensor]] = []
+
+    def flush() -> float | None:
+        """Move buffered losses to the host in one transfer; returns the latest."""
+        if not pending:
+            return None
+        vals = torch.stack([v for _, v in pending]).float().cpu().tolist()
+        for (s, _), v in zip(pending, vals):
+            trace.append({"iteration": s, "loss": float(v)})
+        pending.clear()
+        return float(vals[-1])
+
+    last_loss = float("nan")
     for step in range(start + 1, total + 1):
         batch = next(it)
         hr = batch["HR"].to(device, non_blocking=True)
@@ -193,21 +210,24 @@ def train(
             torch.nn.utils.clip_grad_norm_(net.parameters(), float(grad_clip))
         opt_g.step()
         if step % trace_every == 0:
-            trace.append({"iteration": step, "loss": float(loss)})
+            pending.append((step, loss.detach()))
 
         if step % 100 == 0:
-            log.info("dmahr iter %d/%d loss %.5f (%.0fs)", step, total, float(loss),
+            last_loss = flush() or last_loss
+            log.info("dmahr iter %d/%d loss %.5f (%.0fs)", step, total, last_loss,
                      time.time() - t0)
         if save_every and step % save_every == 0:
             torch.save(net.state_dict(), out_dir / f"iter_{step}_gen.pth")
         if step % val_every == 0 or step == total:
+            last_loss = flush() or last_loss
             v = val_loss(net, val_loader, device, mode=conditioning)
-            history.append({"iteration": step, "train_l1": float(loss), "val_l1": v})
+            history.append({"iteration": step, "train_l1": last_loss, "val_l1": v})
             log.info("dmahr val iter %d: %.5f", step, v)
             if v < best:
                 best = v
                 torch.save(net.state_dict(), out_dir / "best_gen.pth")
         if step % ckpt_every == 0 or step == total:
+            flush()
             tmp = state_path.with_suffix(".tmp")
             torch.save(
                 {"iteration": step, "model": net.state_dict(),
