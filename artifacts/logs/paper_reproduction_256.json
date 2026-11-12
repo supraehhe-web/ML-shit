@@ -1,0 +1,45 @@
+{
+  "bf16": true,
+  "checkpoint": "I725000_E1083_gen.pth",
+  "estimated_usd": 0.63,
+  "identity_n": 20,
+  "measured_seconds_per_image_step": {
+    "256": 0.009182452082633972
+  },
+  "n_pairs": 40,
+  "note": "hairless references may contain natural hair; they were not filtered",
+  "paper_reference": {
+    "citation": "DM-AHR paper, Cancers 2024, 16, 2947",
+    "lpips": 0.0128,
+    "psnr": 41.04,
+    "ssim": 0.966
+  },
+  "seconds": 1086.9,
+  "settings": {
+    "res256_steps2000": {
+      "floor": {
+        "lpips": 0.5640199970453977,
+        "psnr": 17.76479167456187,
+        "ssim": 0.6509270347082236
+      },
+      "identity": {
+        "lpips": 0.004993534367531538,
+        "psnr": 46.21434857025925,
+        "ssim": 0.9957872368493474
+      },
+      "n_identity": 20,
+      "n_output": 40,
+      "output": {
+        "lpips": 0.024808952771127223,
+        "psnr": 41.145845546766864,
+        "ssim": 0.9663477608086076
+      },
+      "res": 256,
+      "steps": 2000
+    }
+  },
+  "source": "vendored DERMAHAIR akiec subset only (101 pairs; partial: one class)",
+  "verdict": {
+    "statement": "NOT EVALUATED: res128_steps2000 was not part of this run"
+  }
+}
