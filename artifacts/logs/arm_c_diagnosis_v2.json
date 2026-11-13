@@ -1,0 +1,23 @@
+{
+  "branch": {
+    "branch": null,
+    "missing": [
+      "noise-prediction MSE",
+      "checkpoint trend",
+      "warm start",
+      "overfit"
+    ],
+    "status": "NOT RUN"
+  },
+  "inputs_present": {
+    "mse": false,
+    "overfit": false,
+    "score": false,
+    "warm_start": false
+  },
+  "static_audit": {
+    "ema": "upstream marks EMA 'not used now'; no EMA code upstream or in our trainer",
+    "ema_bug_branch_a": "ruled out by audit (no EMA weights exist)"
+  },
+  "validity_of_fixed_arm": null
+}

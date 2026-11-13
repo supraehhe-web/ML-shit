@@ -55,7 +55,7 @@ def predict(model, loader, device):
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--arm", required=True, choices=["A", "B", "C", "Astar"])
+    ap.add_argument("--arm", required=True, choices=["A", "B", "C", "Astar", "Creleased", "Cfixed"])
     ap.add_argument("--seed", required=True, type=int)
     args = ap.parse_args()
 

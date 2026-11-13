@@ -1,0 +1,107 @@
+{
+  "cross_check_against_modal_run": {
+    "max_abs_diff_area_v1": 0.0,
+    "max_abs_diff_gauss_overlap_v1": 0.000547045951859948,
+    "max_abs_diff_gauss_pointing_v1": 0.0,
+    "note": "agreement shows the locally downloaded masks equal the masks used on Modal"
+  },
+  "fraction": 0.2,
+  "hair_present_fraction_in_test_x1": 0.8761651131824234,
+  "lesion_retained_by_centre_crop": {
+    "native_mean": 0.9454184472060322,
+    "native_min": 0.5535406254146579,
+    "squashed128_mean": 0.9824066460876868
+  },
+  "mask_source": "HAM10000_segmentations_lesion_tschandl.zip, Harvard Dataverse doi:10.7910/DVN/DBW86T",
+  "n_masks": 1502,
+  "native": {
+    "centroid_offset_dx_mean": -0.013597861027926681,
+    "centroid_offset_dx_sd": 0.08037472345232151,
+    "centroid_offset_dy_mean": -0.007179768905526383,
+    "centroid_offset_dy_sd": 0.07854001326013386,
+    "fraction_masks_containing_centre": 0.9494007989347537,
+    "gaussian_overlap": {
+      "ci_high": 0.47943236894473107,
+      "ci_low": 0.45644198409754105,
+      "mean": 0.46771322717131186
+    },
+    "gaussian_overlap_shifted": {
+      "mean": 0.35902646867000476,
+      "n_kept": 1489
+    },
+    "gaussian_pointing": {
+      "ci_high": 0.9617672743600633,
+      "ci_low": 0.9397973150062612,
+      "mean": 0.9507323568575233
+    },
+    "gaussian_pointing_shifted": {
+      "mean": 0.7515110812625924
+    },
+    "mean_abs_centroid_offset": 0.0903672671606844,
+    "mean_area": 0.4546694835245183,
+    "mean_ceiling": 0.5562729451960616,
+    "mean_pointing_chance_analytic": 0.4546694835245183,
+    "mean_pointing_chance_monte_carlo": 0.4545755659121172,
+    "sd_area": 0.24838216327227036
+  },
+  "squashed128": {
+    "centroid_offset_dx_mean": -0.012989650858914861,
+    "centroid_offset_dx_sd": 0.06635952771827752,
+    "centroid_offset_dy_mean": -0.007333902618271125,
+    "centroid_offset_dy_sd": 0.0788499513979998,
+    "fraction_masks_containing_centre": 0.948069241011984,
+    "gaussian_overlap": {
+      "ci_high": 0.5687428204442878,
+      "ci_low": 0.5449074603398667,
+      "mean": 0.5568201239962597
+    },
+    "gaussian_overlap_shifted": {
+      "mean": 0.38184972431391156,
+      "n_kept": 1494
+    },
+    "gaussian_pointing": {
+      "ci_high": 0.9633833744723348,
+      "ci_low": 0.9420853535353535,
+      "mean": 0.9527296937416777
+    },
+    "gaussian_pointing_shifted": {
+      "mean": 0.6619812583668006
+    },
+    "mean_abs_centroid_offset": 0.08459173766868491,
+    "mean_area": 0.3638826483905812,
+    "mean_ceiling": 0.6575888080941156,
+    "mean_pointing_chance_analytic": 0.3638826483905812,
+    "mean_pointing_chance_monte_carlo": 0.3638229027962716,
+    "sd_area": 0.22347020767424633
+  },
+  "stretched_v1": {
+    "centroid_offset_dx_mean": -0.009816059157844758,
+    "centroid_offset_dx_sd": 0.059860852645060865,
+    "centroid_offset_dy_mean": -0.0051008022762821514,
+    "centroid_offset_dy_sd": 0.07160187620237064,
+    "fraction_masks_containing_centre": 0.9494007989347537,
+    "gaussian_overlap": {
+      "ci_high": 0.6557660784493892,
+      "ci_low": 0.6318581046905571,
+      "mean": 0.6438152531895975
+    },
+    "gaussian_overlap_shifted": {
+      "mean": 0.40477510554750357,
+      "n_kept": 1495
+    },
+    "gaussian_pointing": {
+      "ci_high": 0.9633833744723348,
+      "ci_low": 0.9420853535353535,
+      "mean": 0.9527296937416777
+    },
+    "gaussian_pointing_shifted": {
+      "mean": 0.6066889632107023
+    },
+    "mean_abs_centroid_offset": 0.0770443251794483,
+    "mean_area": 0.2932017115996698,
+    "mean_ceiling": 0.7445008620338261,
+    "mean_pointing_chance_analytic": 0.2932017115996698,
+    "mean_pointing_chance_monte_carlo": 0.2930972037283622,
+    "sd_area": 0.19149414694361344
+  }
+}
