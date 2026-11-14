@@ -1,0 +1,46 @@
+{
+  "checkpoint": "/vol/data/raw/dmahr_weights/I725000_E1083_gen.pth",
+  "checkpoint_sha256": "c99e406050d3aaf36473f76477bcfb8ba05d80a420d50d57533eac75b8c8d2fe",
+  "git_commit": "7cd150549d6e3870063fe74e3c88185b4165f117",
+  "name": "released",
+  "rows": [
+    {
+      "fraction_runs_below_floor": 0.0,
+      "hairy_floor_psnr": 21.301303069146993,
+      "mean_margin_db": 4.3832115494275845,
+      "mean_psnr": 25.684514618574582,
+      "mean_ssim": 0.7849864747730132,
+      "pairs": 24,
+      "sd_of_seed_means": 0.09647102519262252,
+      "seed_means": [
+        25.66814879468876,
+        25.57389548575109,
+        25.656739324814563,
+        25.839274869043894
+      ],
+      "seeds": 4,
+      "steps": 50,
+      "t0": 1000
+    },
+    {
+      "fraction_runs_below_floor": 0.28125,
+      "hairy_floor_psnr": 21.301303069146993,
+      "mean_margin_db": 1.9628001866656202,
+      "mean_psnr": 23.264103255812614,
+      "mean_ssim": 0.5662193738137286,
+      "pairs": 24,
+      "sd_of_seed_means": 0.2505644987511837,
+      "seed_means": [
+        23.53912804185053,
+        23.302099831144265,
+        22.857535868430364,
+        23.357649281825285
+      ],
+      "seeds": 4,
+      "steps": 50,
+      "t0": 1999
+    }
+  ],
+  "sampler": "ddim_respaced",
+  "val_pair_ids_sha256": "caaae9bfcc96f52c7252a41b844c8896ed76d82661a5f9822bc67baa10ae69e1"
+}

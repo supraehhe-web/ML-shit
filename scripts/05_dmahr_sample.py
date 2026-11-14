@@ -15,8 +15,9 @@ from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from dm_ahr_vit.config import load_config, save_json  # noqa: E402
+from dm_ahr_vit.config import load_config, save_json, sha256_file  # noqa: E402
 from dm_ahr_vit.diffusion.dmahr_adapter import clean_batch, load_model  # noqa: E402
+from dm_ahr_vit.diffusion.train import _resolve_manifest_path  # noqa: E402
 from dm_ahr_vit.paths import artifact_dir, isic_images_dir, manifest_dir, processed_dir  # noqa: E402
 from dm_ahr_vit.utils import record_run, setup_logging  # noqa: E402
 
@@ -33,6 +34,13 @@ def main() -> int:
                     help="process synthetic pairs for this split instead of real hair-present images")
     ap.add_argument("--bf16", action="store_true",
                     help="bf16 autocast; ~2x faster, verified against fp32 in the smoke test")
+    ap.add_argument("--arm-name", default="C",
+                    help="output arm folder; the default keeps the recorded Arm C paths")
+    ap.add_argument("--respaced", action="store_true",
+                    help="strided DDIM over the trained schedule (see dmahr_adapter)")
+    ap.add_argument("--steps", type=int, default=50, help="DDIM steps when --respaced")
+    ap.add_argument("--start-t", type=int, default=None,
+                    help="start the chain from the noised input at this schedule index")
     args = ap.parse_args()
     cfg = load_config("configs/dmahr.json")
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -49,9 +57,9 @@ def main() -> int:
             pairs.iloc[args.shard::args.n_shards]
         todo = pd.DataFrame({
             "image_id": pairs["image_id"].values,
-            "source_path": pairs["hairy_path"].values,
+            "source_path": [str(_resolve_manifest_path(q)) for q in pairs["hairy_path"].values],
         })
-        out_dir = processed_dir("synth") / args.pairs_split / "cleaned_C"
+        out_dir = processed_dir("synth") / args.pairs_split / f"cleaned_{args.arm_name}"
     else:
         screen = pd.read_csv(manifest_dir() / "hair_screening.csv")
         todo = screen[screen["hair_present"]].sort_values("image_id").reset_index(drop=True)
@@ -60,7 +68,7 @@ def main() -> int:
             "image_id": todo["image_id"].values,
             "source_path": [str(isic_images_dir() / f"{i}.jpg") for i in todo["image_id"]],
         })
-        out_dir = processed_dir("C")
+        out_dir = processed_dir(args.arm_name)
     out_dir.mkdir(parents=True, exist_ok=True)
     todo = todo[~todo["image_id"].map(lambda i: (out_dir / f"{i}.png").exists())]
     log.info("shard %d/%d: %d images to process", args.shard, args.n_shards, len(todo))
@@ -74,8 +82,9 @@ def main() -> int:
         images = [Image.open(p).convert("RGB") for p in chunk["source_path"]]
         seed = int(hashlib.sha256(f"{args.shard}:{start}".encode()).hexdigest()[:8], 16)
         outs, stats = clean_batch(net, images, cfg, device=device, seed=seed,
-                                  num_timesteps=args.num_timesteps,
-                                  use_bf16=args.bf16)
+                                  num_timesteps=args.steps if args.respaced else args.num_timesteps,
+                                  use_bf16=args.bf16, respaced=args.respaced,
+                                  start_t=args.start_t)
         for image_id, out in zip(chunk["image_id"], outs):
             path = out_dir / f"{image_id}.png"
             tmp = path.with_suffix(".png.tmp")
@@ -90,6 +99,8 @@ def main() -> int:
                      time.time() - t0)
     df = pd.DataFrame(rows)
     tag = f"pairs_{args.pairs_split}" if args.pairs_split else "real"
+    if args.arm_name != "C":
+        tag += f"_{args.arm_name}"
     out_csv = artifact_dir("logs") / f"dmahr_sample_{tag}_shard{args.shard}.csv"
     df.to_csv(out_csv, index=False)
     summary = {
@@ -100,6 +111,9 @@ def main() -> int:
         "seconds": round(time.time() - t0, 1),
         "seconds_per_image": round((time.time() - t0) / max(len(df), 1), 2),
         "checkpoint": str(ckpt),
+        "checkpoint_sha256": sha256_file(ckpt),
+        "arm": args.arm_name, "respaced": args.respaced, "steps": args.steps,
+        "start_t": args.start_t,
         "num_timesteps": args.num_timesteps or cfg["num_timesteps"],
     }
     save_json(summary, artifact_dir("logs") / f"dmahr_sample_{tag}_shard{args.shard}.json")

@@ -21,7 +21,8 @@ image-processing hair removal, or than leaving the hair in?
 |---|---|---|
 | **A** | original image | baseline: no hair removal |
 | **B** | DullRazor-style morphological detection + Telea inpainting | classical hair removal |
-| **C** | DM-AHR conditional diffusion inpainting | generative hair removal |
+| **C** | first diffusion run (defective trainer; recorded failure) | generative hair removal, failed |
+| **Cv2** | rebuilt diffusion hair removal (Phase 14) | generative hair removal |
 | **A\*** | original, bicubic 128 px round-trip | control for Arm C's resolution change |
 
 **Data.** HAM10000, 7 diagnostic classes, split 70/15/15 **by lesion** so one lesion never appears
@@ -116,7 +117,8 @@ Four input conditions, everything else held identical:
 |---|---|---|
 | **A** | the original image | baseline: no hair removal |
 | **B** | DullRazor-style morphological detection + Telea inpainting | classical hair removal |
-| **C** | DM-AHR conditional diffusion inpainting | generative hair removal |
+| **C** | first diffusion run (defective trainer; recorded failure) | generative hair removal, failed |
+| **Cv2** | rebuilt diffusion hair removal (Phase 14) | generative hair removal |
 | **A\*** | the original passed through a 128 px round-trip | Arm C's resolution change, alone |
 
 Arm A\* exists because DM-AHR works natively at 128 px while the ViT expects 224. Without it, a
@@ -225,12 +227,15 @@ log, rather than by substituting a different model.
 
 Trains DM-AHR on **train-split sources only**, selecting on validation.
 
-*Why not use the released weights:* their training data is undocumented. Using them could leak test
-images into Arm C through an unknown training set. The released weights are used for the smoke test
+*Why not use the released weights:* the DM-AHR paper says they were trained on HAM10000 images other
+than a 700-image test set, so they very probably saw our validation and test images. Using them
+could leak test images into Arm C. The released weights are used for the smoke test
 only, never for Arm C.
 
-*Deviation:* 20,000 iterations against 660,000 in the upstream config. Documented as D1; it is the
-single most important caveat on Arm C.
+*Deviation:* 20,000 iterations against 660,000 in the upstream config, and a training script that
+gave the network an inverted noise-level signal (found after the primary results; see
+`reports/oneshot_diagnostic_report.md`). Together they are the single most important caveat on
+Arm C.
 
 *Writes:* `artifacts/checkpoints/dmahr/`, `dmahr_train.json`, `training_manifest.json`.
 
@@ -281,13 +286,11 @@ hairy input* scored as a floor.
 
 *Why the floor matters:* a method that scores below the image it was given has actively damaged it.
 Arm C scored below the hairy input, which is how the failure was first detected. A follow-up
-diagnosis (`scripts/17_arm_c_diagnose.py`, written up in `reports/arm_c_diagnosis.md`) then
-separated the two possible causes: a hairless reference round-trips through the same inference path
-at PSNR 34.6 / SSIM 0.990, and the released DM-AHR checkpoint reaches PSNR 26.8 / SSIM 0.684
-through it, while the checkpoint trained here reaches 15.0 / 0.079. The adapter is sound; the
-checkpoint is undertrained. Its output is not blurred — it carries far more high-frequency energy
-than the reference with reduced global contrast, which is what a model that has not learned the
-mapping produces.
+diagnosis (`scripts/17_arm_c_diagnose.py`, written up in `reports/arm_c_diagnosis.md`) first
+concluded the checkpoint was undertrained. That conclusion is retracted: the training script fed the
+network an inverted noise-level signal, found later and documented in
+`reports/oneshot_diagnostic_report.md`. The released DM-AHR checkpoint reaches PSNR 26.8 / SSIM
+0.684 through the same inference path, while the checkpoint trained here reaches 15.0 / 0.079.
 
 ### Phase 11 — Explainability (`08_xai.py`)
 
@@ -327,6 +330,45 @@ acceptance criteria.
 marked **PENDING** because the dataset is Kaggle-gated and no credentials were available.
 
 ---
+
+### Phase 14 — Rebuilt diffusion arm Cv2 (Stages A, B and C)
+
+Arm C above was made with a trainer that gave the network an inverted noise-level signal; it stays in
+the record as a failed run. The rebuilt arm Cv2 is documented in `reports/prereg_v2_diffusion.md`
+(plan, results, deviations) and `reports/protocol_addendum_stageC.md` (what was frozen before the test
+split was used). In code:
+
+- `src/dm_ahr_vit/diffusion/train.py` mirrors upstream's loss and noise-level convention; contract
+  tests are in `tests/test_noise_level_convention.py` and `tests/test_trainer_sampler_contract.py`.
+- `respaced_super_resolution(..., start_t=600)` in `src/dm_ahr_vit/diffusion/dmahr_adapter.py` starts
+  the strided DDIM chain from the noised input instead of pure noise (Stage A; `scripts/38_partial_noise_eval.py`).
+- `scripts/40_harvest_hair.py` and `src/dm_ahr_vit/hair/harvest.py` cut thin, long, dark hair strands
+  out of train and validation photos (never test). The frozen screening config
+  (`configs/hair_screen.json`, hash-checked by `load_hair_screen_config`) supplies the detector.
+  `scripts/43_harvest_review.py` writes the contact sheets used to review the harvest.
+- `src/dm_ahr_vit/data/hair_composite.py` pastes harvested strands onto clean train photos on the fly;
+  `scripts/04_dmahr_train.py --composite --warm-start <ckpt>` fine-tunes on them.
+- Validation-only checks: `scripts/37_real_hair_check.py` (detector ratio on real photos),
+  `scripts/45_composite_eval.py` (ground truth on pasted strands), `scripts/46_dense_hair_sheet.py`.
+- Stage C: `scripts/05_dmahr_sample.py --arm-name Cv2 --respaced --start-t 600`, `05b_fill_c_passthrough.py
+  --arm-name Cv2`, then `06/07/08` with `--arm Cv2`, `07b_image_quality.py --c-arm Cv2` and
+  `09_stats.py --c-arm Cv2` (outputs carry a `_Cv2` suffix). Modal drivers are in `modal_app.py`
+  (`cv2_sample_driver`, `vit_arm_driver`, `stats_arm`).
+
+Honest status: the pre-registered real-photo gate for Stage B was not met (decision D34) and Stage C was
+run anyway as a recorded deviation; read `reports/stageC_results.md` for what that does and does not show.
+
+Later stages (all documented in `reports/`):
+
+- **Stage D** (`reports/prereg_v3_pasteback.md`, `scripts/48_pasteback.py`, `src/dm_ahr_vit/hair/pasteback.py`): full-resolution
+  paste-back of the diffusion fill. Failed its validation gate (SSIM 0.846 against 0.90); never used on test data.
+- **Stage E** (`reports/prereg_v4_review_response.md`, `reports/stageE_results.md`): response to an independent review.
+  `scripts/53_pooled_analysis.py` (with `src/dm_ahr_vit/stats/pooled.py`) pools eight seeds with a two-level bootstrap;
+  `50_composite_arms.py`, `51_condition_usage.py`, `52_residual_hair_split.py` are validation-only checks;
+  `54_review_kit.py` builds and analyses a blinded human-review kit; `55_headline_table.py` writes the pooled headline
+  metrics. `49_second_opinion_brief.py` builds `reports/SECOND_OPINION_BRIEF.md`.
+- The final report was edited by hand after Stage C. Re-running `10_finalize.py` regenerates it from its template and would
+  drop the Stage C and Stage E sections; port them first.
 
 ## 5. What was actually used
 | Element | What was used | Where it is recorded |
@@ -536,7 +578,7 @@ Every one is recorded in `reports/decision_log.md` with its reason. Summary:
 
 | # | Deviation | Status |
 |---|---|---|
-| D1 | Diffusion trained 20,000 iterations, not 660,000 | Documented, limits Arm C |
+| D1 | Diffusion trained 20,000 iterations, not 660,000, with a defective script | Documented, limits Arm C |
 | D9 | DERMAHAIR pairs unavailable (Kaggle-gated); synthetic hair used | Documented, F04 PENDING |
 | D12 | Arm C sampled at 1,000 steps not 2,000 | Labelled ablation |
 | D14 | Implementation on Modal, not Google Colab as the proposal states | Documented |
@@ -570,11 +612,12 @@ which the source does not claim were dermatologist-traced.
 
 ## 12. Questions a supervisor is likely to ask
 **"Why is Arm C so much worse? Isn't that just a broken implementation?"**
-Partly a budget problem, and the report says so first: 20,000 training iterations instead of
-660,000, 1,000 sampling steps instead of 2,000, and 128 px upsampled to 224. The smoke test, the
-geometry check, the deterministic reload and the panelled outputs show the implementation runs
-correctly. What was not funded was the training budget. The report labels Arm C an ablation and does
-not present it as the method's published performance.
+Partly a budget problem, and partly a defect in our training script. The report says so first: the
+script gave the network an inverted noise-level signal (found after the primary results), the run
+used 20,000 training iterations instead of 660,000, 1,000 sampling steps instead of 2,000, and
+128 px upsampled to 224. The smoke test, the geometry check, the deterministic reload and the
+panelled outputs show the sampling implementation runs correctly. The report labels Arm C a failed
+replication and does not present it as the method's published performance.
 
 **"How do you know there is no leakage?"**
 Three independent guards: the split is grouped by lesion plus pixel-confirmed duplicates; the
@@ -604,7 +647,10 @@ measured per-unit costs.
 
 ## 13. What is deliberately not claimed
 - That diffusion hair removal helps or harms classification in general. The tested model was
-  under-resourced.
+  a failed replication.
+- That classical hair removal hurts classification. Our frozen DullRazor settings damage lesions
+  on real hair, so the original-against-DullRazor gap is confounded.
+- That any arm cleanly removed real hair. The released diffusion model left real hair in place.
 - That the explanations show clinically correct reasoning. They show spatial alignment with released
   masks.
 - That the hair detector is validated on real hair. No independent annotations exist.

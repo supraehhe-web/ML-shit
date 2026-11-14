@@ -1,0 +1,68 @@
+{
+  "data_seed": 100,
+  "git_commit": "b1fe351a89cff2729a1d8290cf05b3ddf672e9d8",
+  "rows": [
+    {
+      "ceiling_psnr": 42.31944495099853,
+      "checkpoint_sha256": "77031da6dbea73ad751adf9aaddf6c7cfb2cd762582eb1c8b2bb3956d188b845",
+      "floor_psnr": 25.2414419141468,
+      "fraction_of_gap_closed": 0.39248960149117623,
+      "fraction_runs_below_floor": 0.0,
+      "hair_removal_native": 0.6346943079708365,
+      "hair_removal_native_median": 0.6338626089287813,
+      "items": 48,
+      "margin_db": 6.289855266315407,
+      "mean_psnr": 31.531297180462207,
+      "model": "fixed50k",
+      "seeds": 2,
+      "t0": 600
+    },
+    {
+      "ceiling_psnr": 42.31944495099853,
+      "checkpoint_sha256": "77031da6dbea73ad751adf9aaddf6c7cfb2cd762582eb1c8b2bb3956d188b845",
+      "floor_psnr": 25.2414419141468,
+      "fraction_of_gap_closed": 0.3575540590514385,
+      "fraction_runs_below_floor": 0.041666666666666664,
+      "hair_removal_native": 0.6624318535290231,
+      "hair_removal_native_median": 0.6753879784691094,
+      "items": 48,
+      "margin_db": 6.098110548719336,
+      "mean_psnr": 31.339552462866138,
+      "model": "fixed50k",
+      "seeds": 2,
+      "t0": 1000
+    },
+    {
+      "ceiling_psnr": 42.31944495099853,
+      "checkpoint_sha256": "dd06c2163e93c5348515ad9ac69f8858b2dd2e5154380471014bcde1b33e7130",
+      "floor_psnr": 25.2414419141468,
+      "fraction_of_gap_closed": 0.4755215058764886,
+      "fraction_runs_below_floor": 0.0,
+      "hair_removal_native": 0.7730655872255469,
+      "hair_removal_native_median": 0.7925991148446742,
+      "items": 48,
+      "margin_db": 7.539296877904942,
+      "mean_psnr": 32.78073879205174,
+      "model": "v2",
+      "seeds": 2,
+      "t0": 600
+    },
+    {
+      "ceiling_psnr": 42.31944495099853,
+      "checkpoint_sha256": "dd06c2163e93c5348515ad9ac69f8858b2dd2e5154380471014bcde1b33e7130",
+      "floor_psnr": 25.2414419141468,
+      "fraction_of_gap_closed": 0.393586466877851,
+      "fraction_runs_below_floor": 0.03125,
+      "hair_removal_native": 0.8063277569815894,
+      "hair_removal_native_median": 0.8165036908293514,
+      "items": 48,
+      "margin_db": 6.699241564959803,
+      "mean_psnr": 31.9406834791066,
+      "model": "v2",
+      "seeds": 2,
+      "t0": 1000
+    }
+  ],
+  "steps": 50,
+  "target_ids_sha256": "53ea325b8fe57868f7e8db9684a9f046364dfe529dcc3ec5c21774134f234115"
+}

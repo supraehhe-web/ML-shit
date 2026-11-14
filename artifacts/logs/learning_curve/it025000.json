@@ -1,0 +1,120 @@
+{
+  "checkpoint": "dmahr/gen_iter025000.pth",
+  "checkpoint_sha256": "692163e929d3e4d3740f21decd17a9a3ea8b32ec922fd6a422364f3df04d4d4e",
+  "condition_usage": [
+    {
+      "kept_all": 0.03329065442085266,
+      "kept_hair": 0.04485907405614853,
+      "kept_other": 0.024876397103071213,
+      "shuffled_all": 0.21739093959331512,
+      "shuffled_hair": 0.23822404444217682,
+      "shuffled_other": 0.20223797857761383,
+      "shuffled_over_kept_hair": 5.310498476718448,
+      "shuffled_over_kept_other": 8.129713388143564,
+      "t": 200,
+      "zeroed_all": 0.16007965803146362,
+      "zeroed_hair": 0.1765470653772354,
+      "zeroed_other": 0.14810211956501007,
+      "zeroed_over_kept_hair": 3.9355931679788494,
+      "zeroed_over_kept_other": 5.953519673744296
+    },
+    {
+      "kept_all": 0.01576111651957035,
+      "kept_hair": 0.019317712634801865,
+      "kept_other": 0.013174233958125114,
+      "shuffled_all": 0.0982622429728508,
+      "shuffled_hair": 0.10962771624326706,
+      "shuffled_other": 0.08999558538198471,
+      "shuffled_over_kept_hair": 5.674984317023488,
+      "shuffled_over_kept_other": 6.831181658686164,
+      "t": 500,
+      "zeroed_all": 0.08454254269599915,
+      "zeroed_hair": 0.09322071075439453,
+      "zeroed_other": 0.07823050022125244,
+      "zeroed_over_kept_hair": 4.825659875820524,
+      "zeroed_over_kept_other": 5.938144143326401
+    },
+    {
+      "kept_all": 0.011325940489768982,
+      "kept_hair": 0.012193776667118073,
+      "kept_other": 0.010694722644984722,
+      "shuffled_all": 0.0348828062415123,
+      "shuffled_hair": 0.039352454245090485,
+      "shuffled_other": 0.03163181245326996,
+      "shuffled_over_kept_hair": 3.227257257483559,
+      "shuffled_over_kept_other": 2.9577029253866307,
+      "t": 1000,
+      "zeroed_all": 0.034175459295511246,
+      "zeroed_hair": 0.037893909960985184,
+      "zeroed_other": 0.031470850110054016,
+      "zeroed_over_kept_hair": 3.107643431191461,
+      "zeroed_over_kept_other": 2.942652292606413
+    },
+    {
+      "kept_all": 0.011835488490760326,
+      "kept_hair": 0.012486178427934647,
+      "kept_other": 0.011362210847437382,
+      "shuffled_all": 0.013552695512771606,
+      "shuffled_hair": 0.014356548897922039,
+      "shuffled_other": 0.012968015857040882,
+      "shuffled_over_kept_hair": 1.1497952700886378,
+      "shuffled_over_kept_other": 1.1413285698676918,
+      "t": 1500,
+      "zeroed_all": 0.013368155807256699,
+      "zeroed_hair": 0.014182744547724724,
+      "zeroed_other": 0.012775668874382973,
+      "zeroed_over_kept_hair": 1.1358755306583193,
+      "zeroed_over_kept_other": 1.1243999117710777
+    }
+  ],
+  "floors": {
+    "partial": {
+      "n": 50,
+      "psnr": 21.49723647044352,
+      "ssim": 0.7390627809094188
+    },
+    "pure": {
+      "n": 24,
+      "psnr": 21.301303069146993,
+      "ssim": 0.7377299907803648
+    }
+  },
+  "git_commit": "09cb3360c4f494c0c63e2b8a6d0202710e1614fc",
+  "name": "it025000",
+  "one_step_eps_mae": {
+    "1000": 0.011325940489768982,
+    "1500": 0.011835488490760326,
+    "1900": 0.011934134177863598,
+    "200": 0.03329065442085266,
+    "500": 0.01576111651957035
+  },
+  "partial_t0_600": {
+    "floor": {
+      "n": 50,
+      "psnr": 21.49723647044352,
+      "ssim": 0.7390627809094188
+    },
+    "gain_db": 8.34027755663606,
+    "n": 50,
+    "psnr": 29.837514027079582,
+    "ssim": 0.9166126419723867
+  },
+  "pure_noise_2000": {
+    "floor": {
+      "n": 24,
+      "psnr": 21.301303069146993,
+      "ssim": 0.7377299907803648
+    },
+    "gain_db": -9.87015181527912,
+    "n": 24,
+    "psnr": 11.431151253867872,
+    "ssim": 0.45075098212144843
+  },
+  "seconds": 117.173,
+  "sha256": {
+    "configs/dmahr.json": "545db93b0183386b81c640735df785ee4e8a1159ebe79ef0be5c69df22007b74",
+    "scripts/63_learning_curve_eval.py": "979fd9f0783fa590e5a74d1b8229a83888a9fbc743d107c1a297b0baf656093e",
+    "synthetic_pairs.csv": "a6d8e5cab5f6f99b22483fc24c72855596993b7cdf329ff0a16134ba6f442f81"
+  },
+  "val_pairs_hash": "7043ff364ba475c4bae9ffd0885599957a293fb44042d0e12f5079ec7680df67"
+}

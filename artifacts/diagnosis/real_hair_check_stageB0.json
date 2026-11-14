@@ -1,0 +1,52 @@
+{
+ "n_images": 40,
+ "median_orig_coverage": 0.447845458984375,
+ "summary": {
+  "B": {
+   "median_fraction_of_hair_coverage_remaining": 0.6294894622800454,
+   "mean_fraction_remaining": 0.6076024287159101,
+   "images_with_less_than_half_remaining": 9,
+   "mean_absdiff_inside_hair_mask": 5.784810502010799,
+   "mean_absdiff_outside_hair_mask": 0.2661575966530466,
+   "inside_over_outside_ratio": 21.73453087477217
+  },
+  "Creleased": {
+   "median_fraction_of_hair_coverage_remaining": 0.9509864314343912,
+   "mean_fraction_remaining": 0.9340327481051837,
+   "images_with_less_than_half_remaining": 0,
+   "mean_absdiff_inside_hair_mask": 2.788244678353437,
+   "mean_absdiff_outside_hair_mask": 2.4769105350047105,
+   "inside_over_outside_ratio": 1.1256945452606486
+  },
+  "fixed_t600": {
+   "median_fraction_of_hair_coverage_remaining": 0.9165189139642325,
+   "mean_fraction_remaining": 0.8450761784867418,
+   "images_with_less_than_half_remaining": 4,
+   "mean_absdiff_inside_hair_mask": 2.945943092001094,
+   "mean_absdiff_outside_hair_mask": 1.7196384995605747,
+   "inside_over_outside_ratio": 1.7131176655755738
+  },
+  "fixed_t1000": {
+   "median_fraction_of_hair_coverage_remaining": 0.9080821569592956,
+   "mean_fraction_remaining": 0.8432760619257612,
+   "images_with_less_than_half_remaining": 4,
+   "mean_absdiff_inside_hair_mask": 4.050571827008291,
+   "mean_absdiff_outside_hair_mask": 2.797144244092134,
+   "inside_over_outside_ratio": 1.4481097410559107
+  },
+  "fixed_t1500": {
+   "median_fraction_of_hair_coverage_remaining": 0.9306389355681908,
+   "mean_fraction_remaining": 1.13491334231291,
+   "images_with_less_than_half_remaining": 4,
+   "mean_absdiff_inside_hair_mask": 11.909644053994246,
+   "mean_absdiff_outside_hair_mask": 10.932375930484195,
+   "inside_over_outside_ratio": 1.0893921074178399
+  }
+ },
+ "provenance": {
+  "git_commit": "2b1d170b0528774e837133399280fc9defa4c22d",
+  "detector_config_hash": "e232efe4705133a175ec50d5147954a6545456d469b6353fb42d348387704273",
+  "id_list_sha256": "b3992e39cbd1f32746080aafed20de0da7c8b7150a60e397eaae66cbc3275211",
+  "resolution": 128
+ }
+}

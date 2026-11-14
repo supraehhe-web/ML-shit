@@ -81,3 +81,26 @@ Every job appends wall-clock seconds and GPU type to
 `artifacts/logs/run_registry.jsonl`. The authoritative spend figure is the sum
 over that file, not this projection.
 
+
+## Addendum 2026-11-13: retrain and checks (A100-80GB, Modal account motog5g987)
+
+The run registry under-records this work: the evaluation jobs wrote 0 seconds and the continuation was stopped before it could record its time. The figures below come from job logs and are estimates. The Modal price per GPU-hour was not verified; $2.5 is the rate used in earlier estimates.
+
+| Job | Wall-clock | Source |
+|---|---:|---|
+| Fixed-trainer retrain, 20,000 iterations | 1,220 s | training log |
+| Continuation to 56,300 iterations (stopped by the owner) | about 3,590 s | training log |
+| About 15 evaluation and replicate jobs (24 pairs or fewer, 2,000 sampling steps) | roughly 30 to 45 min in total | job logs, rough |
+| Total GPU time | about 2 hours | sum |
+| Estimated cost | about $5 | at $2.5 per GPU-hour, price unverified |
+
+CPU-only diagnostics ran on the development sandbox and are not billed to Modal. The 20,000 to 100,000 plan was cut at 56,300 iterations, so the planned 1.9 GPU-hours were not fully spent.
+
+## Addendum: Stages B and C (rebuilt diffusion arm)
+
+Measured on one A100-80GB unless noted: strand harvest 125 s on CPU; fine-tune 682 s (20,000 iterations, one preemption resumed from the 9,000 snapshot); validation evaluations about 5 min in total; Cv2 sampling in four containers of 356 to 601 s plus 67 s for the 186 test pairs; three ViT trainings of 452 to 553 s each plus 47 to 165 s of evaluation and explanation. About 1.3 GPU-hours in total. Modal prices were not verified; at an assumed $2.5 to $3.5 per hour that is roughly $3 to $5. No spend cap was set by the owner (the provisional `max_spend_usd` is in `configs/protocol.json`).
+
+
+## Addendum: Stage E (extra seeds and checks)
+
+Measured: 20 ViT runs (train and evaluate) took 10,835 s of container time in total (3.0 GPU-hours, 40 jobs, no preemption); composite arms 76 s, condition usage 38 s, residual hair 69 s and 125 s (CPU). About 3.1 GPU-hours. Modal prices were not verified; at an assumed $2.5 to $3.5 per hour that is roughly $8 to $11.

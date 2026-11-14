@@ -521,11 +521,12 @@ def build(d: dict) -> Path:
          f"Arm B improves fidelity substantially, consistent with classical inpainting doing what "
          f"it is designed to do on hair-sized structures. Arm C scores below the unprocessed "
          f"input in this run, which is a real result about the model that was tested, not a "
-         f"scoring error. A diagnosis on validation pairs attributes it to the checkpoint rather "
-         f"than the inference path: the released DM-AHR weights reach PSNR 26.8 / SSIM 0.684 "
-         f"through the same adapter, while the checkpoint trained here reaches 15.0 / 0.079. Its "
-         f"output is noisy and structurally unrelated to the target rather than blurred. Arm C in "
-         f"this study was under-resourced — see section 7.", space_after=4)
+         f"scoring error. The cause is a defect in the training script, not the inference "
+         f"path: the released DM-AHR weights reach PSNR 26.8 / SSIM 0.684 through the same "
+         f"adapter, while the checkpoint trained here reaches 15.0 / 0.079, because the script "
+         f"gave the network an inverted noise-level signal. Its output is noisy and "
+         f"structurally unrelated to the target rather than blurred. Arm C in this study is "
+         f"a failed replication — see section 7.", space_after=4)
 
     # ------------------------------------------------------- 4. visual
     h1(doc, "4. Visual before-and-after")
@@ -645,8 +646,8 @@ def build(d: dict) -> Path:
     # ------------------------------------------------------- 7. limitations
     h1(doc, "7. Limitations")
     bullet(doc, "the Lama et al. manually annotated hair masks specified by the proposal were not obtained, so the detector's accuracy on real hair is unverified. Behaviour on synthetic pairs is not evidence about real hair.", "Hair screening is unvalidated — ")
-    bullet(doc, "the fix is pixel-level interpolation, so lesion texture under removed hair is not recovered, only approximated.", "Classical removal destroys texture — ")
-    bullet(doc, "the checkpoint was trained well below the reference iteration budget and sampled at half the reference steps. A diagnosis on validation pairs shows the inference path is sound and the released weights work through it, so the failure is the checkpoint, not the adapter. That is a property of this under-resourced model, not proof about the published method.", "Arm C is under-resourced — ")
+    bullet(doc, "the fix is pixel-level interpolation, so lesion texture under removed hair is not recovered, only approximated. On 8 real-hair training images reviewed, our frozen settings replaced lesion and skin texture with blocky patches, and in one image erased the lesion; the released diffusion model, by contrast, left real hair in place (reports/hair_check_prereg.md).", "Classical removal destroys texture — ")
+    bullet(doc, "the training script gave the network an inverted noise-level signal (t/T instead of the sampler's sqrt(alphas_cumprod_prev)), and the checkpoint was also trained well below the reference iteration budget and sampled at half the reference steps. The released weights work through the same inference path, so the failure is the training run, not the adapter. The fixed script did not reach usable sampling at the budgets tried. Arm C is a failed replication, not evidence about the published method.", "Arm C is a failed replication — ")
     bullet(doc, "synthetic hair is a proxy for real hair. It gives a true reference image, which real hair cannot, but its appearance differs from genuine terminal hair.", "Synthetic pairs are a proxy — ")
     bullet(doc, "the HAM10000 segmentations were created by a single dermatologist (Tschandl P), network-initialised and then verified, corrected or replaced by hand in FIJI (Tschandl et al., Nature Medicine 2020). They are dermatologist-produced but single-rater, with no inter-rater agreement available, so they are one tracing rather than consensus ground truth.", "Lesion masks are single-rater — ")
     bullet(doc, "HAM10000 is CC BY-NC 4.0, and the DM-AHR repository's README and LICENSE disagree (CC BY-NC 4.0 against Apache-2.0). Commercial use is unresolved and needs a rights decision.", "Licensing is unresolved — ")

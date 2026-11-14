@@ -1,0 +1,120 @@
+{
+  "checkpoint": "dmahr/gen_iter050000.pth",
+  "checkpoint_sha256": "77031da6dbea73ad751adf9aaddf6c7cfb2cd762582eb1c8b2bb3956d188b845",
+  "condition_usage": [
+    {
+      "kept_all": 0.027826514095067978,
+      "kept_hair": 0.03884740546345711,
+      "kept_other": 0.019810497760772705,
+      "shuffled_all": 0.23958095908164978,
+      "shuffled_hair": 0.2637139558792114,
+      "shuffled_other": 0.22202786803245544,
+      "shuffled_over_kept_hair": 6.788457368852633,
+      "shuffled_over_kept_other": 11.207586538895491,
+      "t": 200,
+      "zeroed_all": 0.1893564909696579,
+      "zeroed_hair": 0.21090497076511383,
+      "zeroed_other": 0.1736832708120346,
+      "zeroed_over_kept_hair": 5.429061947612111,
+      "zeroed_over_kept_other": 8.767234064958705
+    },
+    {
+      "kept_all": 0.013693654909729958,
+      "kept_hair": 0.01723063737154007,
+      "kept_other": 0.011121038347482681,
+      "shuffled_all": 0.11025296151638031,
+      "shuffled_hair": 0.12399700284004211,
+      "shuffled_other": 0.10025627166032791,
+      "shuffled_over_kept_hair": 7.196309699190152,
+      "shuffled_over_kept_other": 9.01500997728522,
+      "t": 500,
+      "zeroed_all": 0.0976572036743164,
+      "zeroed_hair": 0.1090443953871727,
+      "zeroed_other": 0.08937475830316544,
+      "zeroed_over_kept_hair": 6.328517804412846,
+      "zeroed_over_kept_other": 8.036547983255177
+    },
+    {
+      "kept_all": 0.009278269484639168,
+      "kept_hair": 0.010293745435774326,
+      "kept_other": 0.00853966549038887,
+      "shuffled_all": 0.03796090558171272,
+      "shuffled_hair": 0.04316950589418411,
+      "shuffled_other": 0.03417243808507919,
+      "shuffled_over_kept_hair": 4.193760780614911,
+      "shuffled_over_kept_other": 4.001613192406566,
+      "t": 1000,
+      "zeroed_all": 0.036319300532341,
+      "zeroed_hair": 0.040531206876039505,
+      "zeroed_other": 0.03325577452778816,
+      "zeroed_over_kept_hair": 3.9374596087425613,
+      "zeroed_over_kept_other": 3.8942713347749405
+    },
+    {
+      "kept_all": 0.009572692215442657,
+      "kept_hair": 0.009903831407427788,
+      "kept_other": 0.009331840090453625,
+      "shuffled_all": 0.013403686694800854,
+      "shuffled_hair": 0.014476872980594635,
+      "shuffled_other": 0.012623107060790062,
+      "shuffled_over_kept_hair": 1.4617446910230223,
+      "shuffled_over_kept_other": 1.3526921741515234,
+      "t": 1500,
+      "zeroed_all": 0.011930483393371105,
+      "zeroed_hair": 0.012915845960378647,
+      "zeroed_other": 0.011213780380785465,
+      "zeroed_over_kept_hair": 1.3041261941001816,
+      "zeroed_over_kept_other": 1.2016687247199023
+    }
+  ],
+  "floors": {
+    "partial": {
+      "n": 50,
+      "psnr": 21.49723647044352,
+      "ssim": 0.7390627809094188
+    },
+    "pure": {
+      "n": 24,
+      "psnr": 21.301303069146993,
+      "ssim": 0.7377299907803648
+    }
+  },
+  "git_commit": "09cb3360c4f494c0c63e2b8a6d0202710e1614fc",
+  "name": "it050000",
+  "one_step_eps_mae": {
+    "1000": 0.009278269484639168,
+    "1500": 0.009572692215442657,
+    "1900": 0.01054962258785963,
+    "200": 0.027826514095067978,
+    "500": 0.013693654909729958
+  },
+  "partial_t0_600": {
+    "floor": {
+      "n": 50,
+      "psnr": 21.49723647044352,
+      "ssim": 0.7390627809094188
+    },
+    "gain_db": 9.293619677263916,
+    "n": 50,
+    "psnr": 30.790856147707437,
+    "ssim": 0.9258013865347288
+  },
+  "pure_noise_2000": {
+    "floor": {
+      "n": 24,
+      "psnr": 21.301303069146993,
+      "ssim": 0.7377299907803648
+    },
+    "gain_db": -7.2450377868702756,
+    "n": 24,
+    "psnr": 14.056265282276717,
+    "ssim": 0.6404424342786664
+  },
+  "seconds": 116.681,
+  "sha256": {
+    "configs/dmahr.json": "545db93b0183386b81c640735df785ee4e8a1159ebe79ef0be5c69df22007b74",
+    "scripts/63_learning_curve_eval.py": "979fd9f0783fa590e5a74d1b8229a83888a9fbc743d107c1a297b0baf656093e",
+    "synthetic_pairs.csv": "a6d8e5cab5f6f99b22483fc24c72855596993b7cdf329ff0a16134ba6f442f81"
+  },
+  "val_pairs_hash": "7043ff364ba475c4bae9ffd0885599957a293fb44042d0e12f5079ec7680df67"
+}

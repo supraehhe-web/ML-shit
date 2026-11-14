@@ -1,0 +1,52 @@
+{
+ "n_images": 12,
+ "median_orig_coverage": 0.931549072265625,
+ "summary": {
+  "B": {
+   "median_fraction_of_hair_coverage_remaining": 0.09303579760090275,
+   "mean_fraction_remaining": 0.1037047950215429,
+   "images_with_less_than_half_remaining": 12,
+   "mean_absdiff_inside_hair_mask": 10.08896956468409,
+   "mean_absdiff_outside_hair_mask": 0.23897089237373295,
+   "inside_over_outside_ratio": 42.21840352383035
+  },
+  "Creleased": {
+   "median_fraction_of_hair_coverage_remaining": 0.9684139839300856,
+   "mean_fraction_remaining": 0.9297769450456314,
+   "images_with_less_than_half_remaining": 0,
+   "mean_absdiff_inside_hair_mask": 4.257110243190089,
+   "mean_absdiff_outside_hair_mask": 2.2534595970266253,
+   "inside_over_outside_ratio": 1.8891442512691254
+  },
+  "fixed50k_t600": {
+   "median_fraction_of_hair_coverage_remaining": 0.2741035204420739,
+   "mean_fraction_remaining": 0.31702391991389417,
+   "images_with_less_than_half_remaining": 11,
+   "mean_absdiff_inside_hair_mask": 8.22928065611344,
+   "mean_absdiff_outside_hair_mask": 4.417476279423901,
+   "inside_over_outside_ratio": 1.8628918720954968
+  },
+  "v2_t600": {
+   "median_fraction_of_hair_coverage_remaining": 0.1696154923620304,
+   "mean_fraction_remaining": 0.1767361812046472,
+   "images_with_less_than_half_remaining": 12,
+   "mean_absdiff_inside_hair_mask": 10.291920689859376,
+   "mean_absdiff_outside_hair_mask": 5.658029024324356,
+   "inside_over_outside_ratio": 1.8189939722142674
+  },
+  "v2_t1000": {
+   "median_fraction_of_hair_coverage_remaining": 0.1272783205709499,
+   "mean_fraction_remaining": 0.15046052377885863,
+   "images_with_less_than_half_remaining": 12,
+   "mean_absdiff_inside_hair_mask": 11.27056241419718,
+   "mean_absdiff_outside_hair_mask": 6.809215761744837,
+   "inside_over_outside_ratio": 1.6551924345703415
+  }
+ },
+ "provenance": {
+  "git_commit": "b1fe351a89cff2729a1d8290cf05b3ddf672e9d8",
+  "detector_config_hash": "e232efe4705133a175ec50d5147954a6545456d469b6353fb42d348387704273",
+  "id_list_sha256": "3d88075e9eaa30a4f84cdec524dcfe7f0b6c0582bdf943c23d7dd5f1b8438593",
+  "resolution": 128
+ }
+}

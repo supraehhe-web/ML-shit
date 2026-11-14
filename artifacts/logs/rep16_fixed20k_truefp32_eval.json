@@ -1,0 +1,138 @@
+{
+  "checkpoint": "/__modal/volumes/vo-TbNx5IITKUKx9iVQZHZpNF/artifacts/checkpoints/dmahr/best_gen.pth",
+  "cudnn_tf32": false,
+  "one_step": [
+    {
+      "condition_effect_ratio": 3.4228799658954143,
+      "eps_err": 0.034394770860672,
+      "eps_err_zero_cond": 0.11772917211055756,
+      "one_step_psnr_first_pair": 41.69499352285165,
+      "t": 200
+    },
+    {
+      "condition_effect_ratio": 2.040691101533635,
+      "eps_err": 0.009537821635603905,
+      "eps_err_zero_cond": 0.01946374773979187,
+      "one_step_psnr_first_pair": 31.56709298624819,
+      "t": 1000
+    },
+    {
+      "condition_effect_ratio": 1.0487620154894939,
+      "eps_err": 0.00903574749827385,
+      "eps_err_zero_cond": 0.009476348757743835,
+      "one_step_psnr_first_pair": 18.27715408921271,
+      "t": 1500
+    }
+  ],
+  "pairs": 16,
+  "pass_margin_db": 2.0,
+  "precision": "fp32",
+  "sample_steps": 2000,
+  "sampling": {
+    "hairy_floor_psnr": 19.53805611105971,
+    "hairy_floor_ssim": 0.7173292305576794,
+    "margin_db": -7.551985923094012,
+    "n": 16,
+    "per_pair": [
+      {
+        "hairy_psnr": 19.53805611105971,
+        "pair_id": "synth_val_ISIC_0024337",
+        "psnr": 9.687704327783223,
+        "ssim": 0.3848413268848228
+      },
+      {
+        "hairy_psnr": 19.53805611105971,
+        "pair_id": "synth_val_ISIC_0024337",
+        "psnr": 17.88289870690059,
+        "ssim": 0.850433453200175
+      },
+      {
+        "hairy_psnr": 19.53805611105971,
+        "pair_id": "synth_val_ISIC_0024337",
+        "psnr": 20.03467347118889,
+        "ssim": 0.7235559823865851
+      },
+      {
+        "hairy_psnr": 19.53805611105971,
+        "pair_id": "synth_val_ISIC_0024337",
+        "psnr": 12.558947285286507,
+        "ssim": 0.5585718259003731
+      },
+      {
+        "hairy_psnr": 19.53805611105971,
+        "pair_id": "synth_val_ISIC_0024337",
+        "psnr": 8.649861871731932,
+        "ssim": 0.28545545658747723
+      },
+      {
+        "hairy_psnr": 19.53805611105971,
+        "pair_id": "synth_val_ISIC_0024337",
+        "psnr": 18.007275401871063,
+        "ssim": 0.8472692903259125
+      },
+      {
+        "hairy_psnr": 19.53805611105971,
+        "pair_id": "synth_val_ISIC_0024337",
+        "psnr": 8.620823913190575,
+        "ssim": 0.2504772519549434
+      },
+      {
+        "hairy_psnr": 19.53805611105971,
+        "pair_id": "synth_val_ISIC_0024337",
+        "psnr": 11.71219213564039,
+        "ssim": 0.5544004429296924
+      },
+      {
+        "hairy_psnr": 19.53805611105971,
+        "pair_id": "synth_val_ISIC_0024337",
+        "psnr": 6.465602207400587,
+        "ssim": 0.19120768247603284
+      },
+      {
+        "hairy_psnr": 19.53805611105971,
+        "pair_id": "synth_val_ISIC_0024337",
+        "psnr": 11.925952158410569,
+        "ssim": 0.5090249367809694
+      },
+      {
+        "hairy_psnr": 19.53805611105971,
+        "pair_id": "synth_val_ISIC_0024337",
+        "psnr": 7.4776777860774395,
+        "ssim": 0.24474399938121663
+      },
+      {
+        "hairy_psnr": 19.53805611105971,
+        "pair_id": "synth_val_ISIC_0024337",
+        "psnr": 8.315068169875987,
+        "ssim": 0.24184250773402408
+      },
+      {
+        "hairy_psnr": 19.53805611105971,
+        "pair_id": "synth_val_ISIC_0024337",
+        "psnr": 11.28865539996008,
+        "ssim": 0.39783063489091514
+      },
+      {
+        "hairy_psnr": 19.53805611105971,
+        "pair_id": "synth_val_ISIC_0024337",
+        "psnr": 14.341208431437526,
+        "ssim": 0.5531464558397569
+      },
+      {
+        "hairy_psnr": 19.53805611105971,
+        "pair_id": "synth_val_ISIC_0024337",
+        "psnr": 16.221293760794417,
+        "ssim": 0.7567316075378132
+      },
+      {
+        "hairy_psnr": 19.53805611105971,
+        "pair_id": "synth_val_ISIC_0024337",
+        "psnr": 8.58728797990137,
+        "ssim": 0.25505856224597634
+      }
+    ],
+    "psnr": 11.986070187965698,
+    "ssim": 0.47528696356604283
+  },
+  "verdict": "fail"
+}

@@ -1,0 +1,38 @@
+{
+  "checkpoint": "/vol/data/raw/dmahr_weights/I725000_E1083_gen.pth",
+  "one_step": [
+    {
+      "condition_effect_ratio": 4.16475634146871,
+      "eps_err": 0.07343877851963043,
+      "eps_err_zero_cond": 0.3058546185493469,
+      "one_step_psnr_first_pair": 35.892507946702835,
+      "t": 200
+    },
+    {
+      "condition_effect_ratio": 4.778568833797377,
+      "eps_err": 0.011729071848094463,
+      "eps_err_zero_cond": 0.05604817718267441,
+      "one_step_psnr_first_pair": 28.769058713968203,
+      "t": 1000
+    },
+    {
+      "condition_effect_ratio": 3.2931974270436926,
+      "eps_err": 0.005388949066400528,
+      "eps_err_zero_cond": 0.017746873199939728,
+      "one_step_psnr_first_pair": 24.24837448612829,
+      "t": 1500
+    }
+  ],
+  "pairs": 8,
+  "pass_margin_db": 2.0,
+  "sample_steps": 2000,
+  "sampling": {
+    "hairy_floor_psnr": 20.08125195646946,
+    "hairy_floor_ssim": 0.7123586401744938,
+    "margin_db": 6.554835858501974,
+    "n": 8,
+    "psnr": 26.636087814971432,
+    "ssim": 0.8149141025145578
+  },
+  "verdict": "pass"
+}

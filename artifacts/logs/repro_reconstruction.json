@@ -1,0 +1,12 @@
+{
+  "arm": "A",
+  "label_mismatches": 0,
+  "macro_f1_recorded": 0.7510451247030895,
+  "macro_f1_reproduced": 0.7510451247030895,
+  "max_prob_absdiff": 0.0,
+  "prediction_mismatches": 0,
+  "rows": 1502,
+  "same_image_ids": true,
+  "seed": 42,
+  "verified": true
+}

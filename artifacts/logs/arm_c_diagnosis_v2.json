@@ -1,0 +1,39 @@
+{
+  "branch": {
+    "action": "fix trainer, retrain diffusion within budget, regenerate Arm C, retrain 3 ViT seeds",
+    "branch": "c",
+    "status": "trainer bug"
+  },
+  "inputs_present": {
+    "mse": true,
+    "overfit": true,
+    "score": true,
+    "warm_start": true
+  },
+  "static_audit": {
+    "ema": "upstream marks EMA 'not used now'; no EMA code upstream or in our trainer",
+    "ema_bug_branch_a": "ruled out by audit (no EMA weights exist)"
+  },
+  "step_sweep_choice": {
+    "chosen_steps": 2000,
+    "reference_psnr": 26.414841345288675,
+    "reference_steps": 2000,
+    "tolerance_db": 1.0,
+    "valid": {
+      "hairy_psnr": 22.342935332025622,
+      "hairy_ssim": 0.5311920134481177,
+      "psnr": 26.414841345288675,
+      "rule": "PSNR >= hairy + 3.0 dB and SSIM > hairy SSIM (validation pairs)",
+      "ssim": 0.6815611278848265,
+      "valid": true
+    }
+  },
+  "validity_of_fixed_arm": {
+    "hairy_psnr": 22.342935332025622,
+    "hairy_ssim": 0.5311920134481177,
+    "psnr": 17.15831742887968,
+    "rule": "PSNR >= hairy + 3.0 dB and SSIM > hairy SSIM (validation pairs)",
+    "ssim": 0.6268150366880145,
+    "valid": false
+  }
+}

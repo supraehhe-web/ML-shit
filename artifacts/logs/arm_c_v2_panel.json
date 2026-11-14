@@ -1,0 +1,32 @@
+{
+ "hairy input": {
+  "mean_psnr": 20.615044180263222,
+  "mean_pixel_mean": 0.6860963681110303,
+  "mean_pixel_std": 0.17006973645686538
+ },
+ "reference": {
+  "mean_psnr": Infinity,
+  "mean_pixel_mean": 0.724764847898007,
+  "mean_pixel_std": 0.141052927656411
+ },
+ "released": {
+  "mean_psnr": 27.508789402239454,
+  "mean_pixel_mean": 0.7125012100651893,
+  "mean_pixel_std": 0.14409033384198647
+ },
+ "fixed_5000": {
+  "mean_psnr": 13.716128443309415,
+  "mean_pixel_mean": 0.537827502148863,
+  "mean_pixel_std": 0.12963060399667897
+ },
+ "fixed_20000": {
+  "mean_psnr": 15.08135001049473,
+  "mean_pixel_mean": 0.6320523928972631,
+  "mean_pixel_std": 0.271068085596533
+ },
+ "first_trainer": {
+  "mean_psnr": 14.369829749169512,
+  "mean_pixel_mean": 0.620238592941517,
+  "mean_pixel_std": 0.12666581934291604
+ }
+}

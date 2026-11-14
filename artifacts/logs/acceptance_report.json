@@ -1,88 +1,88 @@
 {
-  "generated_at": "2026-11-12T11:33:42+00:00",
+  "generated_at": "2026-11-13T20:31:50+00:00",
   "gates": [
     {
       "gate": "G1",
       "status": "PASS",
-      "evidence": "/tmp/hoplite/workspace/artifacts/logs/environment_report.json",
+      "evidence": "/__modal/volumes/vo-TbNx5IITKUKx9iVQZHZpNF/artifacts/logs/environment_report.json",
       "detail": "device=NVIDIA A100 80GB PCIe, torch=2.5.1+cu124"
     },
     {
       "gate": "G2",
       "status": "PASS",
-      "evidence": "/tmp/hoplite/workspace/data/manifests/data_manifest.csv, /tmp/hoplite/workspace/artifacts/reports/data_audit.md",
+      "evidence": "/__modal/volumes/vo-TbNx5IITKUKx9iVQZHZpNF/data/manifests/data_manifest.csv, /__modal/volumes/vo-TbNx5IITKUKx9iVQZHZpNF/artifacts/reports/data_audit.md",
       "detail": "collection=11720, c0=10015, extra=1705, class_counts_match=True"
     },
     {
       "gate": "G3",
       "status": "PASS",
-      "evidence": "/tmp/hoplite/workspace/data/manifests/splits.csv + /tmp/hoplite/workspace/data/manifests/split_summary.json",
-      "detail": "overlap_free=True, hash_frozen=True, sizes={'test': 1502, 'train': 7011, 'val': 1502}"
+      "evidence": "/__modal/volumes/vo-TbNx5IITKUKx9iVQZHZpNF/data/manifests/splits.csv + /__modal/volumes/vo-TbNx5IITKUKx9iVQZHZpNF/data/manifests/split_summary.json",
+      "detail": "overlap_free=True, hash_frozen=True, sizes={'train': 7011, 'val': 1502, 'test': 1502}"
     },
     {
       "gate": "G4",
       "status": "PASS",
-      "evidence": "/tmp/hoplite/workspace/artifacts/checkpoints/dmahr/training_manifest.json",
+      "evidence": "/__modal/volumes/vo-TbNx5IITKUKx9iVQZHZpNF/artifacts/checkpoints/dmahr/training_manifest.json",
       "detail": "train_splits=['train'], val_splits=['val']"
     },
     {
       "gate": "G5",
       "status": "PASS",
-      "evidence": "/tmp/hoplite/workspace/artifacts/logs/dmahr_smoke.json, /tmp/hoplite/workspace/reports/license_audit.md",
+      "evidence": "/__modal/volumes/vo-TbNx5IITKUKx9iVQZHZpNF/artifacts/logs/dmahr_smoke.json, /root/proj/reports/license_audit.md",
       "detail": "all_pass=True, geometry=True, reload_identical=True"
     },
     {
       "gate": "G6",
       "status": "PASS",
-      "evidence": "/tmp/hoplite/workspace/data/manifests/hair_screening.csv",
-      "detail": "frozen=True, hair_present=8993, B_written=8993, source=volume_listing, screen_failures=0"
+      "evidence": "/__modal/volumes/vo-TbNx5IITKUKx9iVQZHZpNF/data/manifests/hair_screening.csv",
+      "detail": "frozen=True, hair_present=8993, B_written=8993, source=local, screen_failures=0"
     },
     {
       "gate": "G7",
       "status": "PASS",
-      "evidence": "/tmp/hoplite/workspace/artifacts/checkpoints/vit",
+      "evidence": "/__modal/volumes/vo-TbNx5IITKUKx9iVQZHZpNF/artifacts/checkpoints/vit",
       "detail": "missing=0 []"
     },
     {
       "gate": "G8",
       "status": "PASS",
-      "evidence": "/tmp/hoplite/workspace/artifacts/predictions",
-      "detail": "prediction_files=12, metric_files=12, missing=[]"
+      "evidence": "/__modal/volumes/vo-TbNx5IITKUKx9iVQZHZpNF/artifacts/predictions",
+      "detail": "prediction_files=38, metric_files=38, missing=[]"
     },
     {
       "gate": "G9",
       "status": "PASS",
-      "evidence": "/tmp/hoplite/workspace/artifacts/logs/paired_psnr_ssim_test.csv",
+      "evidence": "/__modal/volumes/vo-TbNx5IITKUKx9iVQZHZpNF/artifacts/logs/paired_psnr_ssim_test.csv",
       "detail": "pairs=186, C_scored=186"
     },
     {
       "gate": "G10",
       "status": "PASS",
-      "evidence": "12 CSVs",
-      "detail": "rows=18024 tiers=['X1'] gradcam_overlap20=0.3876"
+      "evidence": "30 CSVs",
+      "detail": "rows=45060 tiers=['X1'] gradcam_overlap20=0.3730"
     },
     {
       "gate": "G11",
       "status": "PASS",
-      "evidence": "/tmp/hoplite/workspace/artifacts/logs/statistical_comparisons.csv",
-      "detail": "rows=20, endpoints=5"
+      "evidence": "/__modal/volumes/vo-TbNx5IITKUKx9iVQZHZpNF/artifacts/logs/statistical_comparisons.csv",
+      "detail": "rows=22, endpoints=5"
     },
     {
       "gate": "G12",
       "status": "PASS",
-      "evidence": "/tmp/hoplite/workspace/artifacts/reports/final_research_report.md, /tmp/hoplite/workspace/artifacts/reports/artifact_inventory.csv",
+      "evidence": "/__modal/volumes/vo-TbNx5IITKUKx9iVQZHZpNF/artifacts/reports/final_research_report.md, /__modal/volumes/vo-TbNx5IITKUKx9iVQZHZpNF/artifacts/reports/artifact_inventory.csv",
       "detail": "placeholders=[], inventory=True"
     },
     {
       "gate": "G13",
       "status": "PASS",
-      "evidence": "/tmp/hoplite/workspace/artifacts/logs/reproduction_log.json",
+      "evidence": "/__modal/volumes/vo-TbNx5IITKUKx9iVQZHZpNF/artifacts/logs/reproduction_log.json",
       "detail": "README reproduction log"
     },
     {
       "gate": "G14",
       "status": "PASS",
-      "evidence": "/tmp/hoplite/workspace/artifacts/reports",
+      "evidence": "/__modal/volumes/vo-TbNx5IITKUKx9iVQZHZpNF/artifacts/reports",
       "detail": "{'requirements_lock': True, 'readme': True, 'inventory': True, 'license_audit': True, 'final_report': True}"
     }
   ],

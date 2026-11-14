@@ -1,0 +1,13 @@
+{
+  "gate": "2",
+  "result": {
+    "final_loss": 0.07448240954428911,
+    "floor": Infinity,
+    "n": 8,
+    "passed": false,
+    "psnr": 13.430161695974748,
+    "required_psnr": 35.0
+  },
+  "steps": 1000,
+  "train_manifest_sha256": "b302eda0b4a2686a05c8b7b01484b7f71a739f3b89ec805f5c394fa97e1e37a9"
+}

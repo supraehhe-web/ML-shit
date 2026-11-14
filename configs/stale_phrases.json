@@ -1,0 +1,23 @@
+{
+  "comment": "Phrases that must not appear in the current deliverables. Each pattern is a case-insensitive regex. History belongs in decision_log.md, which is not scanned.",
+  "files": [
+    "reports/client_summary.md",
+    "reports/final_research_report.md",
+    "reports/stageE_results.md",
+    "reports/stageC_results.md",
+    "reports/xai_corrected_results.md",
+    "reports/paper_draft.md"
+  ],
+  "docx_dir": "artifacts/reports",
+  "patterns": [
+    "no arm beats a centre prior",
+    "below the centred-Gaussian baseline",
+    "centred[- ]Gaussian baseline[^.\\n]{0,20}0\\.64",
+    "share of the top 20% attention inside the lesion",
+    "top 20% most salient pixels that fall inside the mask",
+    "\\bd_?z\\b",
+    "effect_size_dz",
+    "over-?smooth(ed|ing)? (output|images|diffusion)",
+    "Grad-CAM[^.\\n]{0,60}(visual )?faithfulness has been validated"
+  ]
+}

@@ -157,7 +157,7 @@ def top_fraction_mask(saliency: np.ndarray, fraction: float = 0.2) -> np.ndarray
 
 
 def lesion_overlap(saliency: np.ndarray, mask: np.ndarray, fraction: float = 0.2) -> float:
-    """Fraction of the lesion mask covered by the top-`fraction` salience region."""
+    """Overlap (mask recall): the share of the lesion covered by the top-20% most salient pixels."""
     top = top_fraction_mask(saliency, fraction)
     lesion_area = float(mask.sum())
     if lesion_area == 0:
@@ -165,8 +165,27 @@ def lesion_overlap(saliency: np.ndarray, mask: np.ndarray, fraction: float = 0.2
     return float((top & mask.astype(bool)).sum() / lesion_area)
 
 
+def salient_in_lesion(saliency: np.ndarray, mask: np.ndarray, fraction: float = 0.2) -> float:
+    """Precision: the share of the top-20% most salient pixels that fall inside the lesion."""
+    if mask.sum() == 0:
+        return float("nan")
+    top = top_fraction_mask(saliency, fraction)
+    return float((top & mask.astype(bool)).sum() / top.sum())
+
+
+def top_region_centroid_distance(saliency: np.ndarray, mask: np.ndarray, fraction: float = 0.2) -> float:
+    """Centroid distance: between the centre of the top-20% region and the lesion centre, in image widths."""
+    if mask.sum() == 0:
+        return float("nan")
+    top = top_fraction_mask(saliency, fraction)
+    ty, tx = np.nonzero(top)
+    ly, lx = np.nonzero(mask.astype(bool))
+    d = np.hypot(tx.mean() - lx.mean(), ty.mean() - ly.mean())
+    return float(d / saliency.shape[1])
+
+
 def pointing_game(saliency: np.ndarray, mask: np.ndarray, tolerance: int = 0) -> float:
-    """1.0 if the argmax salience pixel falls on the lesion (optionally dilated)."""
+    """Pointing: 1 if the single most salient pixel falls inside the lesion, else 0."""
     m = mask.astype(bool)
     if tolerance > 0:
         k = 2 * tolerance + 1

@@ -7,6 +7,7 @@ reports/deliverable_checklist.md from what it actually measured.
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -15,8 +16,10 @@ import numpy as np
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
-LOGS = ROOT / "artifacts" / "logs"
-MAN = ROOT / "data" / "manifests"
+DATA = Path(os.environ.get("DATA_ROOT", ROOT / "data"))
+ART = Path(os.environ.get("ARTIFACT_ROOT", ROOT / "artifacts"))
+LOGS = ART / "logs"
+MAN = DATA / "manifests"
 REP = ROOT / "reports"
 
 CLASSES = ["akiec", "bcc", "bkl", "df", "mel", "nv", "vasc"]
@@ -63,7 +66,7 @@ def v2() -> None:
     for arm in ["A", "Astar", "B", "C"]:
         f1s, accs = [], []
         for seed in SEEDS:
-            df = pd.read_csv(ROOT / "artifacts" / "predictions"
+            df = pd.read_csv(ART / "predictions"
                              / f"pred_{arm}_seed{seed}_full.csv")
             y = df["label"].map(CLASSES.index).to_numpy()
             p = df["pred"].map(CLASSES.index).to_numpy()
@@ -91,7 +94,7 @@ def v3() -> None:
         ok = ok and r.returncode == 0
         detail.append(f"{script}:{'ok' if r.returncode == 0 else r.stderr[-80:]}")
     # The tracked copy must equal the generated one.
-    gen = (ROOT / "artifacts" / "reports" / "final_research_report.md").read_text()
+    gen = (ART / "reports" / "final_research_report.md").read_text()
     tracked = (REP / "final_research_report.md").read_text()
     gate("V3", "Reports rebuild from artifacts; tracked copy matches generated",
          ok and gen == tracked,
@@ -103,7 +106,7 @@ def v4() -> None:
     text = (REP / "final_research_report.md").read_text()
     docx_bits = []
     for name in ("Preprocessing_Report.docx", "Results_Report.docx"):
-        p = ROOT / "artifacts" / "reports" / name
+        p = ART / "reports" / name
         if p.exists():
             import docx
             d = docx.Document(p)
@@ -144,16 +147,17 @@ def v6() -> None:
 
 def v7() -> None:
     docs = ["Preprocessing_Report.docx", "Results_Report.docx", "Code_Guide_Report.docx"]
-    ok = all((ROOT / "artifacts" / "reports" / d).exists() for d in docs)
-    # PDF rendering is done separately with soffice; record the page counts if present.
+    ok = all((ART / "reports" / d).exists() for d in docs)
+    # PDFs are rendered with soffice and stored beside the .docx on the volume,
+    # so the evidence survives a sandbox wipe instead of living in /tmp.
     pages = {}
     for d in docs:
-        pdf = Path("/tmp/verify") / d.replace(".docx", ".pdf")
+        pdf = ART / "reports" / d.replace(".docx", ".pdf")
         if pdf.exists():
             import pymupdf
             pages[d] = pymupdf.open(pdf).page_count
     gate("V7", "All three .docx present and rendered to PDF",
-         ok and len(pages) == 3, "artifacts/reports/*.docx, /tmp/verify/*.pdf",
+         ok and len(pages) == 3, "artifacts/reports/*.docx, artifacts/reports/*.pdf",
          json.dumps(pages))
 
 
@@ -169,9 +173,79 @@ def v8() -> None:
          f"diagnosis {seconds / 60:.1f} min = ${cost:.2f}; budget ${budget:.2f}")
 
 
+def v9() -> None:
+    """Explanation geometry: tests pass, every corrected CSV is in the model's frame, per-arm
+    mask fractions are reported."""
+    import re  # noqa: PLC0415
+
+    proc = subprocess.run([sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider",
+                           "tests/test_xai_registration.py"], cwd=ROOT, capture_output=True, text=True)
+    tests_ok = proc.returncode == 0
+    gate("V9a", "Geometry tests (mask aligned with model input, per arm and stored size)", tests_ok,
+         "tests/test_xai_registration.py", proc.stdout.strip().splitlines()[-1] if proc.stdout else "")
+    files = sorted((LOGS / "xai_v2").glob("xai_*_test.csv"))
+    frames = set()
+    for f in files:
+        frames |= set(pd.read_csv(f, usecols=["frame"])["frame"].unique())
+    gate("V9b", "All corrected explanation CSVs use the model-frame geometry", bool(files) and
+         frames == {"model_frame_v2"}, "artifacts/logs/xai_v2/*_test.csv", f"{len(files)} files, frames={sorted(frames)}")
+    geo = LOGS / "xai_v2_analysis" / "xai_geometry_by_arm_test.csv"
+    rep = REP / "xai_corrected_results.md"
+    ok = geo.exists() and rep.exists()
+    arms = pd.read_csv(geo)["arm"].tolist() if geo.exists() else []
+    text = rep.read_text() if rep.exists() else ""
+    ok = ok and all(re.search(rf"\|\s*{a}\s*\|", text) for a in arms) and len(arms) >= 4
+    gate("V9c", "Mask fraction in the model's frame reported per arm", ok,
+         "artifacts/logs/xai_v2_analysis/xai_geometry_by_arm_test.csv; reports/xai_corrected_results.md",
+         f"arms={arms}")
+
+
+def v10() -> None:
+    """No stale explanation or statistics wording in the current deliverables."""
+    import re  # noqa: PLC0415
+
+    cfg = json.loads((ROOT / "configs" / "stale_phrases.json").read_text())
+    texts = {}
+    for rel in cfg["files"]:
+        p = ROOT / rel
+        if p.exists():
+            texts[rel] = p.read_text()
+    try:
+        import docx  # noqa: PLC0415
+
+        for p in sorted((ROOT / cfg["docx_dir"]).glob("*.docx")):
+            d = docx.Document(str(p))
+            body = "\n".join(x.text for x in d.paragraphs)
+            for t in d.tables:
+                for r in t.rows:
+                    body += "\n" + " | ".join(c.text for c in r.cells)
+            texts[str(p.relative_to(ROOT))] = body
+    except Exception as exc:  # noqa: BLE001
+        gate("V10x", "Word text readable for the stale-phrase scan", False, cfg["docx_dir"], repr(exc))
+    hits = []
+    for rel, body in texts.items():
+        for pat in cfg["patterns"]:
+            for m in re.finditer(pat, body, flags=re.IGNORECASE):
+                hits.append(f"{rel}: /{pat}/ -> {body[max(0, m.start() - 30):m.end() + 30]!r}")
+    gate("V10", "No stale explanation or statistics phrases in current deliverables", not hits,
+         "configs/stale_phrases.json", f"{len(texts)} files scanned, {len(hits)} hits" +
+         ("" if not hits else ": " + " || ".join(hits[:3])))
+
+
+def v11() -> None:
+    """Spend for this task stays inside the owner's $40 limit."""
+    p = REP / "spend_log.csv"
+    ok, detail = False, "reports/spend_log.csv missing"
+    if p.exists():
+        df = pd.read_csv(p)
+        total = float(df["est_usd"].sum())
+        ok, detail = total <= 40.0, f"estimated ${total:.2f} of $40.00 over {len(df)} jobs"
+    gate("V11", "Spend within the owner's $40 limit (estimate)", ok, "reports/spend_log.csv", detail)
+
+
 def main() -> int:
-    v1(); v2(); v3(); v4(); v5(); v6(); v7(); v8()
-    out = REP / "deliverable_checklist.md"
+    v1(); v2(); v3(); v4(); v5(); v6(); v7(); v8(); v9(); v10(); v11()
+    out = ART / "reports" / "deliverable_checklist.md"
     lines = ["# Deliverable verification checklist", "",
              "Generated by `scripts/20_deliverable_gates.py`. Each gate records the evidence path",
              "it actually inspected.", "",

@@ -55,8 +55,10 @@ def predict(model, loader, device):
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--arm", required=True, choices=["A", "B", "C", "Astar"])
+    ap.add_argument("--arm", required=True, choices=["A", "B", "C", "Astar", "Creleased", "Cv2"])
     ap.add_argument("--seed", required=True, type=int)
+    ap.add_argument("--out-dir", default=None,
+                    help="override the predictions output directory (reproducibility checks)")
     args = ap.parse_args()
 
     cfg = load_config("configs/vit.json")
@@ -75,7 +77,8 @@ def main() -> int:
     model.eval()
 
     tfm = build_transforms(cfg, train=False)
-    out_dir = artifact_dir("predictions")
+    out_dir = Path(args.out_dir) if args.out_dir else artifact_dir("predictions")
+    out_dir.mkdir(parents=True, exist_ok=True)
     metrics_by_key: dict[tuple, dict] = {}
     for subset in ("full", "hair_present"):
         ids = None if subset == "full" else hairy_ids

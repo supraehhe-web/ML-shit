@@ -4,13 +4,13 @@
   "chance_gaussian_overlap20_mean": 0.6437935892252176,
   "chance_gaussian_pointing_mean": 0.9527296937416777,
   "chance_uniform_overlap20_mean": 0.20001545355314124,
-  "gradcam_overlap20_mean": 0.3886720526030692,
-  "gradcam_pointing_mean": 0.5252996005326231,
+  "gradcam_overlap20_mean": 0.4261594508788206,
+  "gradcam_pointing_mean": 0.5346205059920106,
   "map_shape": "(224, 224)",
   "n": 1502,
-  "rollout_overlap20_mean": 0.5559739532032748,
-  "rollout_pointing_mean": 0.8668442077230359,
-  "seconds": 89.439,
+  "rollout_overlap20_mean": 0.5494327665429736,
+  "rollout_pointing_mean": 0.8695073235685752,
+  "seconds": 98.125,
   "seed": 2026,
   "tier": "X1"
 }

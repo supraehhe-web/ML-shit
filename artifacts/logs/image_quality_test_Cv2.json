@@ -1,0 +1,17 @@
+{
+  "Creleased_scored": 186,
+  "Cv2_scored": 186,
+  "means": {
+    "B_psnr": 35.73193972906506,
+    "B_ssim": 0.91778343261948,
+    "Creleased_psnr": 27.075661880598698,
+    "Creleased_ssim": 0.7025524031402585,
+    "Cv2_psnr": 29.175839171401975,
+    "Cv2_ssim": 0.8605989802550194,
+    "hairy_input_psnr": 22.12650390619163,
+    "hairy_input_ssim": 0.5199638898401483
+  },
+  "pairs": 186,
+  "seconds": 85.607,
+  "split": "test"
+}

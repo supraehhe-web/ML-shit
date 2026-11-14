@@ -1,0 +1,27 @@
+{
+  "arm": "B",
+  "extras": false,
+  "geometry": "aligned",
+  "means": {
+    "gauss_overlap20": 0.4677106911311401,
+    "gauss_overlap_norm": 0.890523113818464,
+    "gauss_pointing": 0.9507323568575233,
+    "gradcam_argmax_x": 0.3697272684040327,
+    "gradcam_argmax_y": 0.3676615702872361,
+    "gradcam_overlap20": 0.3566743534205133,
+    "gradcam_overlap_norm": 0.7031987858671589,
+    "gradcam_pointing": 0.6211717709720372,
+    "lesion_area_frac": 0.4546694835245183,
+    "overlap_ceiling": 0.5562729451960616,
+    "overlap_chance": 0.19999999999999998,
+    "pointing_chance": 0.4546694835245183,
+    "rollout_argmax_x": 0.4715022826707248,
+    "rollout_argmax_y": 0.4851329180140765,
+    "rollout_overlap20": 0.42625159591456036,
+    "rollout_overlap_norm": 0.7379506959384166,
+    "rollout_pointing": 0.9087882822902796
+  },
+  "n": 1502,
+  "seconds": 108.231,
+  "seed": 123
+}

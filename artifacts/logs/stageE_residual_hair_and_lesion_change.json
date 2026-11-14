@@ -1,0 +1,84 @@
+{
+  "detector_config_hash": "e232efe4705133a175ec50d5147954a6545456d469b6353fb42d348387704273",
+  "git_commit": "4981dfc6749a146e1eb61827764e33049fbc4c21",
+  "v2": {
+    "B": {
+      "mean_lesion_changed": 0.2509487508357736,
+      "mean_lesion_mae": 7.462377189998029
+    },
+    "Cv2": {
+      "mean_lesion_changed": 0.1093437426945558,
+      "mean_lesion_mae": 4.309315835648459
+    },
+    "dense_photos": 12,
+    "gate_photos": 40,
+    "n": 52,
+    "paired_Cv2_minus_B_changed": {
+      "mean": -0.14160500814121782,
+      "sd": 0.2020277546384718
+    }
+  },
+  "v3": {
+    "B": {
+      "harvested_minus_val": {
+        "asymmetry_by_rule": true,
+        "ci_high": -0.35965000456995416,
+        "ci_low": -0.4450073793504923,
+        "median_diff": -0.40002395094183474
+      },
+      "posthoc_train_harvested_minus_val_harvested": {
+        "ci_high": 0.11192149848357491,
+        "ci_low": 0.01373596079128752,
+        "median_diff": 0.061528323673391894,
+        "n_val_harvested": 204
+      },
+      "train_harvested": {
+        "median_remaining": 0.3313433731371954,
+        "n": 300
+      },
+      "train_other": {
+        "median_remaining": 0.7814858399948232,
+        "n": 300
+      },
+      "val": {
+        "median_remaining": 0.7313673240790302,
+        "n": 298
+      },
+      "val_harvested": {
+        "median_remaining": 0.2698150494638035,
+        "n": 204
+      }
+    },
+    "Cv2": {
+      "harvested_minus_val": {
+        "asymmetry_by_rule": true,
+        "ci_high": -0.42404569652903545,
+        "ci_low": -0.5111946261978569,
+        "median_diff": -0.4680315601597933
+      },
+      "posthoc_train_harvested_minus_val_harvested": {
+        "ci_high": 0.16122601202713366,
+        "ci_low": 0.009959773137150536,
+        "median_diff": 0.08142558027208424,
+        "n_val_harvested": 204
+      },
+      "train_harvested": {
+        "median_remaining": 0.4886925956830621,
+        "n": 300
+      },
+      "train_other": {
+        "median_remaining": 0.9757578481059291,
+        "n": 300
+      },
+      "val": {
+        "median_remaining": 0.9567241558428554,
+        "n": 298
+      },
+      "val_harvested": {
+        "median_remaining": 0.4072670154109779,
+        "n": 204
+      }
+    },
+    "min_coverage_at_128": 0.005
+  }
+}

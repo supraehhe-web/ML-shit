@@ -1,0 +1,19 @@
+{
+ "name": "new_fixed_20k",
+ "pair_id": "synth_val_ISIC_0024337",
+ "pair_index": 0,
+ "start_t": null,
+ "seed": 42,
+ "seconds": 2039.5249643325806,
+ "provenance": {
+  "git_commit": "36c515b0dc801f5f3d5a2367d5e173c6e85c2919",
+  "git_dirty_code": false,
+  "config_sha256": "545db93b0183386b81c640735df785ee4e8a1159ebe79ef0be5c69df22007b74",
+  "manifest_sha256": "a6d8e5cab5f6f99b22483fc24c72855596993b7cdf329ff0a16134ba6f442f81",
+  "val_pair_ids_sha256": "b56df9e30053c6cfbb266f83ac623df8e439a4eac4b2acffa06503d51005326b",
+  "checkpoint_sha256": {
+   "new_fixed_20k": "4269a67828003cba8cdbd0d0e88f7d5404d87c48e292f45566c33a9a8411700d"
+  },
+  "torch": "2.5.1+cu124"
+ }
+}

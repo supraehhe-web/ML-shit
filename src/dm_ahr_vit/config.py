@@ -78,6 +78,18 @@ def save_frozen(name: str, cfg: dict[str, Any]) -> Path:
     return save_json(cfg, frozen_path(name))
 
 
+def load_hair_screen_config() -> dict[str, Any]:
+    """The frozen hair-screening config shipped with the code (`configs/hair_screen.json`).
+
+    Its embedded hash is recomputed so a changed file cannot pass as the frozen one.
+    """
+    cfg = load_config("configs/hair_screen.json")
+    body = {k: v for k, v in cfg.items() if k != "config_hash"}
+    if config_hash(body) != cfg.get("config_hash"):
+        raise ValueError("configs/hair_screen.json does not match its recorded config_hash")
+    return cfg
+
+
 def sha256_file(path: str | Path, chunk: int = 1 << 20) -> str:
     h = hashlib.sha256()
     with open(path, "rb") as fh:

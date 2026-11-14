@@ -1,0 +1,26 @@
+{
+  "accuracy_on_split": 0.87017310252996,
+  "arm": "Cv2",
+  "frame": "model_frame_v2",
+  "git_commit": "f7e62b43d382b0c2e7164fbcba809d9fb6615a14",
+  "max_shift_frac": 0.3,
+  "mean_mask_area": 0.37569223709373895,
+  "n": 1502,
+  "random_draws": 100,
+  "seconds": 141.899,
+  "seed": 42,
+  "sha256": {
+    "checkpoint": "013d33a2ddb1a98261b055da4634c9c3603655e15043cf99944e235eb2b4c0fb",
+    "configs/sampling.json": "0280aaa7224bbfc639ec1fd81071c01186cf4e0db69f02c184029e880e4f80d8",
+    "configs/vit.json": "09e6255d71757478d589ea1f082e244866026f34e06e66723fc6728bf3cbae13",
+    "mask_manifest_x1.csv": "25a595bcfb44af291eac0f8c53fa1f5c0b751aa4bf6d1b62d5a9c5e302140f91",
+    "scripts/58_xai_corrected.py": "953af5ce38a190586c02f2ee88d752a2aadef6e722003ccbe2aefbc9f50e7b8f",
+    "splits.csv": "fda56cf3c555e6d22f823510670e1392cd9b1b27778a50a831e68f1dd8d5be2b",
+    "src/dm_ahr_vit/xai/batched.py": "51c74b3e733e232ea4e452df61a673c642d3baa680753e2c74a0cd073f6084a7",
+    "src/dm_ahr_vit/xai/geometry.py": "cbca78420618d6f6fc2962beacc09550edae04c9ae893280936942240e834a07",
+    "src/dm_ahr_vit/xai/vit_xai.py": "c35cbdae3cb90026b3d7568ed5a69ad3057ac636353569f6c4900a3c5eb3d75a"
+  },
+  "share_stored_128": 0.8788282290279628,
+  "split": "val",
+  "top_fraction": 0.2
+}

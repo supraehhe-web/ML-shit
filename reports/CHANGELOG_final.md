@@ -1,3 +1,10 @@
+> **SUPERSEDED (2026-11-13).** This document concludes that Arm C's failure is
+> undertraining and that the inference path is sound. That conclusion is
+> retracted: the training script gave the network an inverted noise-level signal
+> (see `reports/oneshot_diagnostic_report.md` and `reports/hypotheses.md`). Cost
+> figures and any "repair" plan below assumed the old script and no longer apply.
+> The text is kept unchanged below for the record.
+
 # Final changelog
 
 What changed in this pass, why, and which numbers moved. Written against the state at commit

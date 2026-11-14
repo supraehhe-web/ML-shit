@@ -10,8 +10,8 @@ it actually inspected.
 | V3 | Reports rebuild from artifacts; tracked copy matches generated | **PASS** | `scripts/13_*, scripts/14_*, scripts/15_*` | 13_preprocessing_report.py:ok; 14_results_report.py:ok; 15_code_guide_report.py:ok; report identical=True |
 | V4 | No stale phrases in either report | **PASS** | `reports/final_research_report.md, artifacts/reports/*.docx` | over-smoothing (affirmative)=0, expert-traced disclaimer=0, no independent hair annotations=0, 'part of that margin'=0, 'uniform chance 0.200' as a claim=0 |
 | V5 | Determinism: Arm A seed 42 reproduces | **PASS** | `artifacts/logs/reproduction_log.json` | diff=0.000000 tolerance=0.02 |
-| V6 | Unit tests pass | **PASS** | `tests/` | 28 passed, 1 warning in 12.15s |
-| V7 | All three .docx present and rendered to PDF | **PASS** | `artifacts/reports/*.docx, /tmp/verify/*.pdf` | {"Preprocessing_Report.docx": 10, "Results_Report.docx": 7, "Code_Guide_Report.docx": 14} |
+| V6 | Unit tests pass | **PASS** | `tests/` | 74 passed, 2 skipped, 15 warnings in 22.75s |
+| V7 | All three .docx present and rendered to PDF | **PASS** | `artifacts/reports/*.docx, artifacts/reports/*.pdf` | {"Preprocessing_Report.docx": 11, "Results_Report.docx": 12, "Code_Guide_Report.docx": 16} |
 | V8 | Spend within budget | **PASS** | `artifacts/logs/run_registry.jsonl` | diagnosis 29.1 min = $1.02; budget $8.37 |
 
 **8 of 8 gates pass.**

@@ -1,0 +1,120 @@
+{
+  "checkpoint": "dmahr/gen_iter055000.pth",
+  "checkpoint_sha256": "e502c828658e4fd445ca0a6d79badb8185f6a2048be682d231fa6331eed4cc61",
+  "condition_usage": [
+    {
+      "kept_all": 0.0249159038066864,
+      "kept_hair": 0.036932069808244705,
+      "kept_other": 0.016175977885723114,
+      "shuffled_all": 0.23638105392456055,
+      "shuffled_hair": 0.2600489556789398,
+      "shuffled_other": 0.21916626393795013,
+      "shuffled_over_kept_hair": 7.0412775950316915,
+      "shuffled_over_kept_other": 13.548872623730887,
+      "t": 200,
+      "zeroed_all": 0.19222486019134521,
+      "zeroed_hair": 0.21330390870571136,
+      "zeroed_other": 0.17689310014247894,
+      "zeroed_over_kept_hair": 5.775574177488787,
+      "zeroed_over_kept_other": 10.935542901465292
+    },
+    {
+      "kept_all": 0.01272572111338377,
+      "kept_hair": 0.01615218073129654,
+      "kept_other": 0.010233494453132153,
+      "shuffled_all": 0.10949736833572388,
+      "shuffled_hair": 0.12298981100320816,
+      "shuffled_other": 0.09968367218971252,
+      "shuffled_over_kept_hair": 7.614439997250807,
+      "shuffled_over_kept_other": 9.740922091300149,
+      "t": 500,
+      "zeroed_all": 0.10089044272899628,
+      "zeroed_hair": 0.11195895075798035,
+      "zeroed_other": 0.0928397849202156,
+      "zeroed_over_kept_hair": 6.931506811402139,
+      "zeroed_over_kept_other": 9.072148848607648
+    },
+    {
+      "kept_all": 0.010338019579648972,
+      "kept_hair": 0.011004330590367317,
+      "kept_other": 0.009853379800915718,
+      "shuffled_all": 0.03822613134980202,
+      "shuffled_hair": 0.04328669235110283,
+      "shuffled_other": 0.03454533964395523,
+      "shuffled_over_kept_hair": 3.9336052289263286,
+      "shuffled_over_kept_other": 3.5059380985948376,
+      "t": 1000,
+      "zeroed_all": 0.03806634992361069,
+      "zeroed_hair": 0.04184884577989578,
+      "zeroed_other": 0.03531516343355179,
+      "zeroed_over_kept_hair": 3.8029433445527645,
+      "zeroed_over_kept_other": 3.584065990257454
+    },
+    {
+      "kept_all": 0.010755966417491436,
+      "kept_hair": 0.011047174222767353,
+      "kept_other": 0.010544156655669212,
+      "shuffled_all": 0.013543756678700447,
+      "shuffled_hair": 0.014338926412165165,
+      "shuffled_other": 0.012965391390025616,
+      "shuffled_over_kept_hair": 1.2979723251411905,
+      "shuffled_over_kept_other": 1.2296281071520871,
+      "t": 1500,
+      "zeroed_all": 0.014052018523216248,
+      "zeroed_hair": 0.014714259654283524,
+      "zeroed_other": 0.013570341281592846,
+      "zeroed_over_kept_hair": 1.3319478228159558,
+      "zeroed_over_kept_other": 1.2870011063707558
+    }
+  ],
+  "floors": {
+    "partial": {
+      "n": 50,
+      "psnr": 21.49723647044352,
+      "ssim": 0.7390627809094188
+    },
+    "pure": {
+      "n": 24,
+      "psnr": 21.301303069146993,
+      "ssim": 0.7377299907803648
+    }
+  },
+  "git_commit": "09cb3360c4f494c0c63e2b8a6d0202710e1614fc",
+  "name": "it055000",
+  "one_step_eps_mae": {
+    "1000": 0.010338019579648972,
+    "1500": 0.010755966417491436,
+    "1900": 0.010704371146857738,
+    "200": 0.0249159038066864,
+    "500": 0.01272572111338377
+  },
+  "partial_t0_600": {
+    "floor": {
+      "n": 50,
+      "psnr": 21.49723647044352,
+      "ssim": 0.7390627809094188
+    },
+    "gain_db": 8.637359215064162,
+    "n": 50,
+    "psnr": 30.134595685507684,
+    "ssim": 0.9119067882557989
+  },
+  "pure_noise_2000": {
+    "floor": {
+      "n": 24,
+      "psnr": 21.301303069146993,
+      "ssim": 0.7377299907803648
+    },
+    "gain_db": -12.736652668977094,
+    "n": 24,
+    "psnr": 8.5646504001699,
+    "ssim": 0.303981071755707
+  },
+  "seconds": 116.731,
+  "sha256": {
+    "configs/dmahr.json": "545db93b0183386b81c640735df785ee4e8a1159ebe79ef0be5c69df22007b74",
+    "scripts/63_learning_curve_eval.py": "979fd9f0783fa590e5a74d1b8229a83888a9fbc743d107c1a297b0baf656093e",
+    "synthetic_pairs.csv": "a6d8e5cab5f6f99b22483fc24c72855596993b7cdf329ff0a16134ba6f442f81"
+  },
+  "val_pairs_hash": "7043ff364ba475c4bae9ffd0885599957a293fb44042d0e12f5079ec7680df67"
+}

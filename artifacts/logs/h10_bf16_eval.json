@@ -1,0 +1,39 @@
+{
+  "checkpoint": "/__modal/volumes/vo-TbNx5IITKUKx9iVQZHZpNF/artifacts/checkpoints/dmahr/best_gen.pth",
+  "one_step": [
+    {
+      "condition_effect_ratio": 4.456496138853295,
+      "eps_err": 0.03675267845392227,
+      "eps_err_zero_cond": 0.16378816962242126,
+      "one_step_psnr_first_pair": 41.69368709435947,
+      "t": 200
+    },
+    {
+      "condition_effect_ratio": 3.855354185644858,
+      "eps_err": 0.009539646096527576,
+      "eps_err_zero_cond": 0.03677871450781822,
+      "one_step_psnr_first_pair": 31.558632100655693,
+      "t": 1000
+    },
+    {
+      "condition_effect_ratio": 1.3768462596424087,
+      "eps_err": 0.008908618241548538,
+      "eps_err_zero_cond": 0.012265797704458237,
+      "one_step_psnr_first_pair": 18.26562647931292,
+      "t": 1500
+    }
+  ],
+  "pairs": 24,
+  "pass_margin_db": 2.0,
+  "precision": "bf16",
+  "sample_steps": 2000,
+  "sampling": {
+    "hairy_floor_psnr": 21.301303069146993,
+    "hairy_floor_ssim": 0.7377299907803648,
+    "margin_db": -6.245387140257403,
+    "n": 24,
+    "psnr": 15.05591592888959,
+    "ssim": 0.6344429919081872
+  },
+  "verdict": "fail"
+}

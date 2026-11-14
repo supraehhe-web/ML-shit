@@ -1,0 +1,30 @@
+{
+  "centroid_offset_quantiles_orig600x450": {
+    "0.1": 0.0175,
+    "0.5": 0.0734,
+    "0.9": 0.1823
+  },
+  "means": {
+    "crop_loss_600x450": 0.054099702597837536,
+    "legacy_area": 0.2948796799845105,
+    "legacy_pointing": 0.9560585885486018,
+    "legacy_precision": 0.759490120132134,
+    "legacy_recall": 0.6424696293253442,
+    "orig600x450_area": 0.45744595535034915,
+    "orig600x450_centroid_offset": 0.08923244002605474,
+    "orig600x450_iou_vs_legacy": 0.6127949313984143,
+    "orig600x450_pointing": 0.9540612516644474,
+    "orig600x450_precision": 0.8469911899563245,
+    "orig600x450_recall": 0.46616984343624673,
+    "sq128_area": 0.365926744782467,
+    "sq128_centroid_offset": 0.08374009256427373,
+    "sq128_iou_vs_legacy": 0.7921287237932962,
+    "sq128_pointing": 0.9567243675099867,
+    "sq128_precision": 0.8011109585160328,
+    "sq128_recall": 0.5550877090704824
+  },
+  "n": 1502,
+  "share_lesion_cut_by_crop_over_10pct": 0.20306258322237017,
+  "split": "val",
+  "top_fraction": 0.2
+}

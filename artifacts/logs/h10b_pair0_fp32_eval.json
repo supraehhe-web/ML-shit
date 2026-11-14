@@ -1,0 +1,47 @@
+{
+  "checkpoint": "/__modal/volumes/vo-TbNx5IITKUKx9iVQZHZpNF/artifacts/checkpoints/dmahr/best_gen.pth",
+  "one_step": [
+    {
+      "condition_effect_ratio": 3.303054917293383,
+      "eps_err": 0.0358416773378849,
+      "eps_err_zero_cond": 0.11838702857494354,
+      "one_step_psnr_first_pair": 41.693858253195366,
+      "t": 200
+    },
+    {
+      "condition_effect_ratio": 1.7806760475881678,
+      "eps_err": 0.012652697041630745,
+      "eps_err_zero_cond": 0.02253035455942154,
+      "one_step_psnr_first_pair": 31.558719807946648,
+      "t": 1000
+    },
+    {
+      "condition_effect_ratio": 1.0975635587450032,
+      "eps_err": 0.011968156322836876,
+      "eps_err_zero_cond": 0.013135812245309353,
+      "one_step_psnr_first_pair": 18.265658678271,
+      "t": 1500
+    }
+  ],
+  "pairs": 1,
+  "pass_margin_db": 2.0,
+  "precision": "fp32",
+  "sample_steps": 2000,
+  "sampling": {
+    "hairy_floor_psnr": 19.53805611105971,
+    "hairy_floor_ssim": 0.7173292305576794,
+    "margin_db": -9.896275815408682,
+    "n": 1,
+    "per_pair": [
+      {
+        "hairy_psnr": 19.53805611105971,
+        "pair_id": "synth_val_ISIC_0024337",
+        "psnr": 9.641780295651028,
+        "ssim": 0.38003812022924127
+      }
+    ],
+    "psnr": 9.641780295651028,
+    "ssim": 0.38003812022924127
+  },
+  "verdict": "fail"
+}

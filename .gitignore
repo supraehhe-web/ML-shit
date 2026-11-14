@@ -2,8 +2,9 @@ __pycache__/
 *.py[cod]
 .venv/
 .pytest_cache/
-data/
+/data/
 artifacts/checkpoints/
+/exports/
 artifacts/images/
 artifacts/masks/
 artifacts/xai_maps/

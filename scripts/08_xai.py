@@ -44,7 +44,7 @@ def overlay(base_img: np.ndarray, sal: np.ndarray, alpha: float = 0.45) -> np.nd
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--arm", default="A", choices=["A", "B", "C", "Astar"])
+    ap.add_argument("--arm", default="A", choices=["A", "B", "C", "Astar", "Creleased", "Cv2"])
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--limit", type=int, default=None)
     ap.add_argument("--tier", default="X1")

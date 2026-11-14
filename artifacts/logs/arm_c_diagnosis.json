@@ -1,0 +1,103 @@
+{
+  "alignment": [
+    {
+      "best_ncc": 0.02990707048911618,
+      "ncc_fliplr": -0.0015327854855705057,
+      "ncc_flipud": 0.00592289247633687,
+      "shift_dx": -1,
+      "shift_dy": 0
+    },
+    {
+      "best_ncc": 0.4016464557027797,
+      "ncc_fliplr": 0.027575533025716623,
+      "ncc_flipud": 0.16548499792947297,
+      "shift_dx": 0,
+      "shift_dy": 0
+    }
+  ],
+  "batch_size": 32,
+  "identity": {
+    "1000": {
+      "hf_ratio": 0.9258097377383181,
+      "n": 50,
+      "psnr_mean": 34.6242055301163,
+      "psnr_sd": 6.178000260892844,
+      "ssim_mean": 0.9896874323213447,
+      "ssim_sd": 0.0036071224259557853
+    },
+    "2000": {
+      "hf_ratio": 0.9087376516504487,
+      "n": 50,
+      "psnr_mean": 41.71888553245931,
+      "psnr_sd": 4.890251310395808,
+      "ssim_mean": 0.9924448012633369,
+      "ssim_sd": 0.0013958129219844495
+    }
+  },
+  "identity_n": 100,
+  "identity_ok": true,
+  "n_pairs": 100,
+  "ours_ok": false,
+  "outcome": "b",
+  "released_ok": true,
+  "split": "validation synthetic pairs only; test pairs never read",
+  "summary": [
+    {
+      "condition": "ours_1000",
+      "hairy_psnr": 22.1119,
+      "hf_out": 0.2686,
+      "hf_ref": 0.018,
+      "n": 100,
+      "psnr": 14.1227,
+      "psnr_sd": 1.2232,
+      "ssim": 0.0731,
+      "ssim_sd": 0.0059,
+      "std_hairy": 0.1751,
+      "std_out": 0.1266,
+      "std_ref": 0.1655
+    },
+    {
+      "condition": "ours_2000",
+      "hairy_psnr": 22.1119,
+      "hf_out": 0.26,
+      "hf_ref": 0.018,
+      "n": 100,
+      "psnr": 14.9909,
+      "psnr_sd": 1.2253,
+      "ssim": 0.0788,
+      "ssim_sd": 0.0079,
+      "std_hairy": 0.1751,
+      "std_out": 0.1296,
+      "std_ref": 0.1655
+    },
+    {
+      "condition": "released_1000",
+      "hairy_psnr": 22.1119,
+      "hf_out": 0.051,
+      "hf_ref": 0.018,
+      "n": 100,
+      "psnr": 24.6599,
+      "psnr_sd": 2.668,
+      "ssim": 0.6405,
+      "ssim_sd": 0.1014,
+      "std_hairy": 0.1751,
+      "std_out": 0.165,
+      "std_ref": 0.1655
+    },
+    {
+      "condition": "released_2000",
+      "hairy_psnr": 22.1119,
+      "hf_out": 0.0448,
+      "hf_ref": 0.018,
+      "n": 100,
+      "psnr": 26.8032,
+      "psnr_sd": 2.7799,
+      "ssim": 0.6837,
+      "ssim_sd": 0.0981,
+      "std_hairy": 0.1751,
+      "std_out": 0.1666,
+      "std_ref": 0.1655
+    }
+  ],
+  "verdict": "Undertrained: the released checkpoint behaves sensibly through the same adapter; our 20,000-iteration checkpoint does not."
+}

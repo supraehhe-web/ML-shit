@@ -7,6 +7,7 @@ sampler only processes hair-present images, so this fills the gap.
 
 from __future__ import annotations
 
+import argparse
 import sys
 from pathlib import Path
 
@@ -22,8 +23,11 @@ log = setup_logging()
 
 
 def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--arm-name", default="C")
+    args = ap.parse_args()
     screen = pd.read_csv(manifest_dir() / "hair_screening.csv")
-    out_dir = processed_dir("C")
+    out_dir = processed_dir(args.arm_name)
     out_dir.mkdir(parents=True, exist_ok=True)
     absent = screen[~screen["hair_present"].astype(bool)]
     written = skipped = failed = 0

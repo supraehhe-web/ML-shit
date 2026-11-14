@@ -22,7 +22,7 @@ log = setup_logging()
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--arm", required=True, choices=["A", "B", "C", "Astar"])
+    ap.add_argument("--arm", required=True, choices=["A", "B", "C", "Astar", "Creleased", "Cv2"])
     ap.add_argument("--seed", required=True, type=int)
     ap.add_argument("--max-epochs", type=int, default=None)
     ap.add_argument("--run-suffix", default=None,

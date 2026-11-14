@@ -1,0 +1,89 @@
+{
+  "checkpoint": "/__modal/volumes/vo-TbNx5IITKUKx9iVQZHZpNF/artifacts/checkpoints/dmahr/best_gen.pth",
+  "one_step": [
+    {
+      "condition_effect_ratio": 3.999291252221244,
+      "eps_err": 0.03706642612814903,
+      "eps_err_zero_cond": 0.14823943376541138,
+      "one_step_psnr_first_pair": 41.69377504589608,
+      "t": 200
+    },
+    {
+      "condition_effect_ratio": 3.3223975226292413,
+      "eps_err": 0.009748965501785278,
+      "eps_err_zero_cond": 0.032389938831329346,
+      "one_step_psnr_first_pair": 31.558750269261427,
+      "t": 1000
+    },
+    {
+      "condition_effect_ratio": 1.2934245238169662,
+      "eps_err": 0.009117292240262032,
+      "eps_err_zero_cond": 0.011792529374361038,
+      "one_step_psnr_first_pair": 18.265551252909,
+      "t": 1500
+    }
+  ],
+  "pairs": 8,
+  "pass_margin_db": 2.0,
+  "precision": "fp32",
+  "sample_steps": 2000,
+  "sampling": {
+    "hairy_floor_psnr": 20.08125195646946,
+    "hairy_floor_ssim": 0.7123586401744938,
+    "margin_db": -6.2478660092420455,
+    "n": 8,
+    "per_pair": [
+      {
+        "hairy_psnr": 19.53805611105971,
+        "pair_id": "synth_val_ISIC_0024337",
+        "psnr": 9.641787319675133,
+        "ssim": 0.3800377387685315
+      },
+      {
+        "hairy_psnr": 22.473185733088883,
+        "pair_id": "synth_val_ISIC_0024353",
+        "psnr": 19.58625712523126,
+        "ssim": 0.8822694013090918
+      },
+      {
+        "hairy_psnr": 20.40222807053086,
+        "pair_id": "synth_val_ISIC_0024528",
+        "psnr": 21.806052843327222,
+        "ssim": 0.7623059104717345
+      },
+      {
+        "hairy_psnr": 17.931485630443103,
+        "pair_id": "synth_val_ISIC_0024574",
+        "psnr": 14.877278110363859,
+        "ssim": 0.6618079006335521
+      },
+      {
+        "hairy_psnr": 21.085439166743353,
+        "pair_id": "synth_val_ISIC_0024663",
+        "psnr": 7.018460199954294,
+        "ssim": 0.2646184419899486
+      },
+      {
+        "hairy_psnr": 17.483556582655034,
+        "pair_id": "synth_val_ISIC_0024743",
+        "psnr": 14.80531568508783,
+        "ssim": 0.7982108820604167
+      },
+      {
+        "hairy_psnr": 20.657091126221875,
+        "pair_id": "synth_val_ISIC_0024783",
+        "psnr": 9.625731060468517,
+        "ssim": 0.31254591825972783
+      },
+      {
+        "hairy_psnr": 21.07897323101284,
+        "pair_id": "synth_val_ISIC_0024858",
+        "psnr": 13.306205233711193,
+        "ssim": 0.5849666169791664
+      }
+    ],
+    "psnr": 13.833385947227413,
+    "ssim": 0.5808453513090213
+  },
+  "verdict": "fail"
+}

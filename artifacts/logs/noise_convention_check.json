@@ -1,0 +1,95 @@
+{
+  "checkpoints": {
+    "ours": {
+      "path": "/__modal/volumes/vo-TbNx5IITKUKx9iVQZHZpNF/artifacts/checkpoints/dmahr/best_gen.pth",
+      "rows": [
+        {
+          "condition_effect_ratio": 0.9729392460693165,
+          "eps_err_sampler_encoding": 0.29048617839813234,
+          "eps_err_sampler_with_zeroed_condition": 0.28262540340423586,
+          "eps_err_t_over_T_encoding": 0.035058426707983016,
+          "prefers": "t_over_T",
+          "ratio_linear_over_sampler": 0.12068879456265524,
+          "t": 200
+        },
+        {
+          "condition_effect_ratio": 1.0488682152025595,
+          "eps_err_sampler_encoding": 0.11496240973472595,
+          "eps_err_sampler_with_zeroed_condition": 0.12058041751384735,
+          "eps_err_t_over_T_encoding": 0.016636202558875084,
+          "prefers": "t_over_T",
+          "ratio_linear_over_sampler": 0.14470993255328307,
+          "t": 500
+        },
+        {
+          "condition_effect_ratio": 1.7918643771582965,
+          "eps_err_sampler_encoding": 0.040772994607687,
+          "eps_err_sampler_with_zeroed_condition": 0.07305967658758164,
+          "eps_err_t_over_T_encoding": 0.009693771302700042,
+          "prefers": "t_over_T",
+          "ratio_linear_over_sampler": 0.23774979973809576,
+          "t": 1000
+        },
+        {
+          "condition_effect_ratio": 1.2309594976669334,
+          "eps_err_sampler_encoding": 0.09628647804260254,
+          "eps_err_sampler_with_zeroed_condition": 0.11852475464344024,
+          "eps_err_t_over_T_encoding": 0.009100892059504985,
+          "prefers": "t_over_T",
+          "ratio_linear_over_sampler": 0.09451890072745459,
+          "t": 1500
+        }
+      ]
+    },
+    "released": {
+      "path": "/__modal/volumes/vo-TbNx5IITKUKx9iVQZHZpNF/data/raw/dmahr_weights/I725000_E1083_gen.pth",
+      "rows": [
+        {
+          "condition_effect_ratio": 4.275303195234083,
+          "eps_err_sampler_encoding": 0.07827680408954621,
+          "eps_err_sampler_with_zeroed_condition": 0.33465707063674927,
+          "eps_err_t_over_T_encoding": 0.3166015028953552,
+          "prefers": "sampler",
+          "ratio_linear_over_sampler": 4.044640127785149,
+          "t": 200
+        },
+        {
+          "condition_effect_ratio": 4.125071364571746,
+          "eps_err_sampler_encoding": 0.03724660143256187,
+          "eps_err_sampler_with_zeroed_condition": 0.15364488899707796,
+          "eps_err_t_over_T_encoding": 0.10901916831731796,
+          "prefers": "sampler",
+          "ratio_linear_over_sampler": 2.9269561281908203,
+          "t": 500
+        },
+        {
+          "condition_effect_ratio": 4.831321182462326,
+          "eps_err_sampler_encoding": 0.012142927907407284,
+          "eps_err_sampler_with_zeroed_condition": 0.05866638481616974,
+          "eps_err_t_over_T_encoding": 0.04788154810667038,
+          "prefers": "sampler",
+          "ratio_linear_over_sampler": 3.9431633352168918,
+          "t": 1000
+        },
+        {
+          "condition_effect_ratio": 3.337227065384022,
+          "eps_err_sampler_encoding": 0.004928009733557701,
+          "eps_err_sampler_with_zeroed_condition": 0.016445887461304664,
+          "eps_err_t_over_T_encoding": 0.10096475094556809,
+          "prefers": "sampler",
+          "ratio_linear_over_sampler": 20.48793659193488,
+          "t": 1500
+        }
+      ]
+    }
+  },
+  "eps_seed": 20260101,
+  "pairs": 50,
+  "seconds": 26.336,
+  "t_grid": [
+    200,
+    500,
+    1000,
+    1500
+  ]
+}

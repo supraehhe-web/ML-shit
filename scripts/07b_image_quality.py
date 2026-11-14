@@ -61,6 +61,7 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--split", default="test", choices=["train", "val", "test"])
     ap.add_argument("--limit", type=int, default=None)
+    ap.add_argument("--c-arm", default="C", help="diffusion arm to score; default is the recorded Arm C")
     args = ap.parse_args()
 
     sampling_cfg = load_config("configs/sampling.json")
@@ -70,7 +71,10 @@ def main() -> int:
     pairs = pairs[pairs["split"] == args.split]
     if args.limit:
         pairs = pairs.head(args.limit)
-    c_dir = processed_dir("synth") / args.split / "cleaned_C"
+    ca = args.c_arm
+    c_dir = processed_dir("synth") / args.split / f"cleaned_{ca}"
+    suffix = "" if ca == "C" else f"_{ca}"
+    released_dir = processed_dir("synth") / args.split / "cleaned_Creleased"
 
     rows = []
     with timed("image_quality", log) as t:
@@ -94,30 +98,40 @@ def main() -> int:
             if c_path.exists():
                 c_out = np.array(Image.open(c_path).convert("RGB"))
                 m = score(c_out, ref, cfg=sampling_cfg)
-                row["C_psnr"], row["C_ssim"] = m["psnr"], m["ssim"]
-                row["C_status"] = "ok"
+                row[f"{ca}_psnr"], row[f"{ca}_ssim"] = m["psnr"], m["ssim"]
+                row[f"{ca}_status"] = "ok"
             else:
-                row["C_psnr"] = row["C_ssim"] = float("nan")
-                row["C_status"] = "missing"
+                row[f"{ca}_psnr"] = row[f"{ca}_ssim"] = float("nan")
+                row[f"{ca}_status"] = "missing"
+            rel_path = released_dir / f"{r.image_id}.png"
+            if rel_path.exists():
+                rel_out = np.array(Image.open(rel_path).convert("RGB"))
+                m = score(rel_out, ref, cfg=sampling_cfg)
+                row["Creleased_psnr"], row["Creleased_ssim"] = m["psnr"], m["ssim"]
+                row["Creleased_status"] = "ok"
+            else:
+                row["Creleased_psnr"] = row["Creleased_ssim"] = float("nan")
+                row["Creleased_status"] = "missing"
             rows.append(row)
 
         df = pd.DataFrame(rows)
-        out = artifact_dir("logs") / f"paired_psnr_ssim_{args.split}.csv"
+        out = artifact_dir("logs") / f"paired_psnr_ssim_{args.split}{suffix}.csv"
         df.to_csv(out, index=False)
 
     summary = {
         "split": args.split,
         "pairs": int(len(df)),
-        "C_scored": int((df["C_status"] == "ok").sum()),
+        f"{ca}_scored": int((df[f"{ca}_status"] == "ok").sum()),
+        "Creleased_scored": int((df["Creleased_status"] == "ok").sum()),
         "means": {
             col: float(df[col].mean()) for col in
-            ("hairy_input_psnr", "B_psnr", "C_psnr",
-             "hairy_input_ssim", "B_ssim", "C_ssim")
+            ("hairy_input_psnr", "B_psnr", f"{ca}_psnr", "Creleased_psnr",
+             "hairy_input_ssim", "B_ssim", f"{ca}_ssim", "Creleased_ssim")
             if col in df and df[col].notna().any()
         },
         "seconds": t["seconds"],
     }
-    save_json(summary, artifact_dir("logs") / f"image_quality_{args.split}.json")
+    save_json(summary, artifact_dir("logs") / f"image_quality_{args.split}{suffix}.json")
     record_run("image_quality", gpu=None, seconds=t["seconds"], split=args.split,
                pairs=len(df))
     print(summary)

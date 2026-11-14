@@ -1,0 +1,46 @@
+{
+  "checkpoint": "/vol/data/raw/dmahr_weights/I725000_E1083_gen.pth",
+  "checkpoint_sha256": "c99e406050d3aaf36473f76477bcfb8ba05d80a420d50d57533eac75b8c8d2fe",
+  "git_commit": "eb39c08e8ce03762be52cd4e76e058349165f22f",
+  "name": "released_rep",
+  "rows": [
+    {
+      "fraction_runs_below_floor": 0.0,
+      "hairy_floor_psnr": 21.357496695073092,
+      "mean_margin_db": 4.371432787568446,
+      "mean_psnr": 25.728929482641536,
+      "mean_ssim": 0.774754710561802,
+      "pairs": 48,
+      "sd_of_seed_means": 0.07012569589995593,
+      "seed_means": [
+        25.849148373512566,
+        25.674486374313062,
+        25.689311348040956,
+        25.702771834699565
+      ],
+      "seeds": 4,
+      "steps": 50,
+      "t0": 1000
+    },
+    {
+      "fraction_runs_below_floor": 0.3125,
+      "hairy_floor_psnr": 21.357496695073092,
+      "mean_margin_db": 1.7817205290708535,
+      "mean_psnr": 23.139217224143945,
+      "mean_ssim": 0.5510267125108791,
+      "pairs": 48,
+      "sd_of_seed_means": 0.7031757982366574,
+      "seed_means": [
+        24.28588323729639,
+        23.10147659975361,
+        22.431947865094514,
+        22.73756119443126
+      ],
+      "seeds": 4,
+      "steps": 50,
+      "t0": 1999
+    }
+  ],
+  "sampler": "ddim_respaced",
+  "val_pair_ids_sha256": "939d376887f04501108fe618cc6f163256836685b660fd466f7e525c802b86d1"
+}

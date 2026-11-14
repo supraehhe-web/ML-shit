@@ -1,0 +1,23 @@
+{
+  "arms": [
+    "A",
+    "Astar",
+    "B",
+    "Cv2"
+  ],
+  "bootstrap_seed": 20261113,
+  "design": "two-level bootstrap: lesion groups shared across arms, seeds resampled within arm; p = 2*min tail with +1 smoothing; Holm per endpoint, subset, family",
+  "git_commit": "ec9c290",
+  "max_abs_diff_vs_metric_files": 0.0,
+  "replicates": 10000,
+  "seeds": [
+    42,
+    123,
+    2026,
+    7,
+    11,
+    17,
+    23,
+    31
+  ]
+}

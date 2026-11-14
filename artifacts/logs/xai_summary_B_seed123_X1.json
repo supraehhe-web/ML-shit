@@ -8,9 +8,9 @@
   "gradcam_pointing_mean": 0.4627163781624501,
   "map_shape": "(224, 224)",
   "n": 1502,
-  "rollout_overlap20_mean": 0.5471610397551616,
+  "rollout_overlap20_mean": 0.5471610801078473,
   "rollout_pointing_mean": 0.8508655126498003,
-  "seconds": 98.752,
+  "seconds": 107.14,
   "seed": 123,
   "tier": "X1"
 }

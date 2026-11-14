@@ -1,0 +1,13 @@
+arm,method,n_seeds,mean_pairwise_spearman,seed_range_of_mean_recall
+A,attention rollout,3,0.9810277639212646,0.07764456285620058
+A,"Grad-CAM, last-block ln_1 (primary)",3,0.26146687763287607,0.07066388583437247
+A,"Grad-CAM, patch grid (sensitivity)",3,0.21843387633694664,0.1673145520285303
+B,attention rollout,3,0.9775851636685808,0.06166048817121067
+B,"Grad-CAM, last-block ln_1 (primary)",3,0.2619678847977736,0.1366576999541313
+B,"Grad-CAM, patch grid (sensitivity)",3,0.37364251900488865,0.05675546616459021
+Astar,attention rollout,3,0.9839287580278513,0.057086354780441106
+Astar,"Grad-CAM, last-block ln_1 (primary)",3,0.39340421530389563,0.08992991691951872
+Astar,"Grad-CAM, patch grid (sensitivity)",3,0.2789402607038483,0.10357416604950481
+Cv2,attention rollout,3,0.9902981576278856,0.0430380885378393
+Cv2,"Grad-CAM, last-block ln_1 (primary)",3,0.19329201226877366,0.14554770797960812
+Cv2,"Grad-CAM, patch grid (sensitivity)",3,0.38246521985217735,0.03778935557337798

@@ -20,8 +20,9 @@ from dm_ahr_vit.paths import artifact_dir, data_root, manifest_dir  # noqa: E402
 from dm_ahr_vit.utils import record_run, setup_logging, timed  # noqa: E402
 
 log = setup_logging()
-ARMS = ["A", "B", "C", "Astar"]
-ARM_LABEL = {"A": "Original", "B": "DullRazor", "C": "DM-AHR", "Astar": "A* (128 px)"}
+ARMS = ["A", "B", "C", "Astar", "Creleased"]
+ARM_LABEL = {"A": "Original", "B": "DullRazor", "C": "DM-AHR",
+             "Astar": "A* (128 px)", "Creleased": "Creleased (released ckpt)"}
 
 
 def read_json(path: Path):
@@ -189,13 +190,17 @@ def hypothesis_section(stats: pd.DataFrame, summ: pd.DataFrame) -> str:
         "texture better than classical inpainting.** "
         f"On {npairs} held-out synthetic pairs, {_verdict(psnr)} on PSNR, and "
         f"{_verdict(ssim)} on SSIM. H1 is not supported by these data. "
-        "The caveat is material and unresolved: Arm C's output scores below the "
-        "unprocessed hairy input, and its SSIM is near-constant across all pairs "
-        "(0.130 +/- 0.010, with 185 of 186 below 0.15). A uniform collapse of that "
-        "kind is consistent with either an undertrained model or a defect in the "
-        "inference path, and the two have not been separated. The released "
-        "checkpoint has not been scored through this adapter, so H1 is best read as "
-        "untested for DM-AHR rather than as evidence against it.")
+        "The caveat is material: Arm C's output scores below the unprocessed hairy "
+        "input, and its SSIM is near-constant across all pairs (0.130 +/- 0.010, "
+        "with 185 of 186 below 0.15). The cause is a defect in our training script, "
+        "not undertraining: it gave the network a noise-level signal that runs "
+        "opposite to the one the sampler uses (see the Arm C paragraph and "
+        "`reports/oneshot_diagnostic_report.md`). Arm C therefore says nothing about "
+        "DM-AHR as published. The released checkpoint, scored through the same "
+        "adapter on synthetic hair (Creleased, exploratory), clears the hairy-input floor but sits "
+        "below classical inpainting, so H1 is not supported for the released weights "
+        "either; that arm's sampling routine is not reproducible from this "
+        "repository and it very probably saw our test images (see Limitations).")
     out.append("")
 
     out.append(
@@ -203,11 +208,21 @@ def hypothesis_section(stats: pd.DataFrame, summ: pd.DataFrame) -> str:
         "outperforms the original and classically cleaned arms.** "
         f"A vs C: {_verdict(_row(stats, 'test_macro_f1', 'A-C', 'full'))}. "
         f"B vs C: {_verdict(_row(stats, 'test_macro_f1', 'B-C', 'full'))}. "
-        "The direction is opposite to the hypothesis and the gap is large, but the "
-        "same unresolved caveat applies: Arm C's image quality is anomalous in a way "
-        "that has not been attributed to training budget or to the inference path. "
-        "This is a true statement about the model that was run, not a refutation of "
-        "the published method.")
+        "The direction is opposite to the hypothesis and the gap is large, but Arm C "
+        "is the output of a defective training script (inverted noise-level signal; "
+        "see the Arm C paragraph). This is a true statement about the model that was "
+        "run, not a refutation of the published method. The exploratory "
+        "released-checkpoint arm reproduces synthetic hair removal well but leaves "
+        "real hair in place (see the real-hair check), so it is not a test of hair "
+        "removal either.")
+    out.append("")
+
+    out.append(
+        f"**A vs B (original against classical removal): "
+        f"{_verdict(_row(stats, 'test_macro_f1', 'A-B', 'full'))}.** This must not be "
+        "read as evidence that hair removal hurts classification: the real-hair check "
+        "shows that our frozen DullRazor settings damage lesions, so the gap is "
+        "confounded with image damage and was not separated from it.")
     out.append("")
 
     gradcam_c = _row(stats, "x1_gradcam_overlap20", "A-C")
@@ -269,6 +284,9 @@ def build_report() -> str:
              "classification and explanation localization relative to the classical "
              "baseline. The results below are reported as measured; a null or negative "
              "result is a valid outcome and is not reframed.\n")
+    L.append("Neither hair-removal method cleanly removed real hair (see the real-hair "
+             "check below), so the classification comparison does not establish whether "
+             "hair removal helps or hurts.\n")
 
     L.append("## Cohort and splits\n")
     L.append(f"- Collection 212 images: {audit.get('collection_total')}\n"
@@ -330,6 +348,11 @@ def build_report() -> str:
                  "negative result for Arm C.\n")
     L.append("### Mean ± SD over seeds\n")
     L.append(md_table(summ))
+    L.append("\nCreleased is the authors' released DM-AHR checkpoint run through our "
+             "pipeline at a 25-step respaced schedule. It was added after the protocol "
+             "was frozen, so it is exploratory and is not part of the pre-registered "
+             "planned family; its comparisons are reported separately in "
+             "`artifacts/logs/statistical_comparisons_exploratory.csv`.\n")
     L.append("\n### Per-class test metrics (full test split)\n")
     L.append(md_table(pclass))
     L.append("\nUndefined AUC values are reported as NaN with a reason in the "
@@ -348,20 +371,49 @@ def build_report() -> str:
              "guessed reference.\n")
     if quality.get("C_scored"):
         diag = read_json(artifact_dir("logs") / "arm_c_diagnosis.json") or {}
-        L.append("\n**Arm C image quality is poor, and the cause has been diagnosed.** "
-                 "The leakage-controlled checkpoint was trained for 20,000 iterations "
-                 "where the upstream config specifies 660,000. A diagnosis on "
-                 "validation pairs (see `reports/arm_c_diagnosis.md`) separates the two "
-                 "possible causes: a hairless reference round-trips through the same "
-                 "inference path at PSNR 34.6 / SSIM 0.990, and the released DM-AHR "
-                 "checkpoint reaches PSNR 26.8 / SSIM 0.684 through that path, above "
-                 "the hairy-input floor of 22.1. Our checkpoint reaches PSNR 15.0 / "
-                 "SSIM 0.079, below the floor. The adapter is sound; the checkpoint is "
-                 "undertrained. Its output is not over-smoothed — it carries roughly "
-                 "15x the reference's high-frequency energy with only a modest drop in "
-                 "global contrast, which is the signature of a model that has not "
-                 "learned the mapping rather than one that has learned to blur. Arm C "
-                 "therefore cannot be read as a fair test of DM-AHR as published.\n")
+        L.append("\n**Arm C image quality is poor because of a defect in our training "
+                 "script, not because of undertraining.** An earlier version of this "
+                 "report said the checkpoint was undertrained and the adapter sound; "
+                 "that diagnosis is retracted. The training script fed the network "
+                 "`t/T` as the noise level while the sampler feeds "
+                 "`sqrt(alphas_cumprod_prev)`, and the two run in opposite directions. "
+                 "On 50 validation pairs the released checkpoint prefers the sampler's "
+                 "encoding at every timestep tested (2.9x to 20.5x lower error) while "
+                 "our checkpoint prefers `t/T` (about 10x lower), so more iterations "
+                 "of the old script could not have fixed it. Arm C as reported "
+                 "therefore measures a defective training run and says nothing about "
+                 "DM-AHR as published.\n")
+        L.append("\nThe script is fixed (`tests/test_noise_level_convention.py`). "
+                 "Retrained on the same 654 training pairs, the model uses its "
+                 "conditioning image about as strongly as the released model at low "
+                 "and middle noise (zero-condition error 3.9x the kept-condition error "
+                 "at t=200, the same as released) and denoises low noise better. It "
+                 "still fails full 2,000-step sampling after 20,000 iterations: PSNR "
+                 "14.96 dB against a 21.30 dB hairy-input floor on 24 validation "
+                 "pairs, and one pair ranges from 6.5 to 20.0 dB across 16 noise draws "
+                 "where the released model gives 25.2 to 27.4 dB. A continuation was "
+                 "stopped at 56,300 of a planned 100,000 iterations on cost; at 50,000 "
+                 "iterations the one-step error at t=1500 was 0.0086 against the "
+                 "released model's 0.0048, and sampling was not re-measured. The "
+                 "retrain was scored on validation pairs only. Our own diffusion arm "
+                 "is therefore reported as a failed replication, not as evidence "
+                 "about DM-AHR.\n")
+
+    L.append("\n**Real-hair check.** Every image-quality number above is measured on "
+             "synthetic hair overlays. A separate check on 40 hairy training images "
+             "with real hair (test set not used; `artifacts/diagnosis/real_hair_check.json`, "
+             "`reports/hair_check_prereg.md`) found that the released DM-AHR model leaves "
+             "real hair in place: it changes hair pixels about as much as other pixels "
+             "(inside/outside change ratio 1.13, against 21.7 for DullRazor) and the "
+             "strands are visibly intact in the contact sheet. Our DullRazor arm does "
+             "remove hair, but in all 8 images reviewed it replaced lesion and skin "
+             "texture with blocky inpainting patches, and in one it erased the whole "
+             "lesion (a dark lesion and marker ink were read as hair); the likely cause "
+             "is the frozen detector and inpainting settings. Neither arm therefore "
+             "removed real hair cleanly. One pre-registered control failed (the "
+             "detector-coverage measure, which is void at 128 px); the conclusion rests "
+             "on the change ratio, whose control passed. The 40-image sample is biased "
+             "toward heavy hair.\n")
 
     L.append("## Explainability\n")
     xai_files = sorted(artifact_dir("logs").glob("xai_summary_*.json"))
@@ -430,6 +482,23 @@ def build_report() -> str:
     else:
         L.append("_Statistics not computed._\n")
 
+    expl_path = artifact_dir("logs") / "statistical_comparisons_exploratory.csv"
+    if expl_path.exists():
+        expl = pd.read_csv(expl_path)
+        L.append("\n### Exploratory: released-checkpoint arm\n")
+        L.append("These rows are **not** part of the pre-registered family. Creleased "
+                 "uses the authors' released DM-AHR checkpoint at a 25-step respaced "
+                 "schedule, a deviation from the paper's 2,000 steps, and its "
+                 "classifier was trained on our budget. Holm correction is applied "
+                 "within this exploratory family only.\n")
+        cols = ["endpoint", "subset", "comparison", "arm_a_mean", "arm_b_mean",
+                "difference", "ci_low", "ci_high", "p_raw", "p_holm",
+                "effect_size_dz", "n_groups"]
+        L.append(md_table(expl[[c for c in cols if c in expl.columns]]))
+        L.append("\nA significant but negligible effect (|Cohen's dz| < 0.2) is "
+                 "flagged in the CSV's `negligible` column and is not described as "
+                 "a meaningful difference.\n")
+
     env = read_json(artifact_dir("logs") / "environment_report.json") or {}
     L.append("## Compute environment\n")
     L.append(
@@ -462,18 +531,31 @@ def build_report() -> str:
     L.append("- DM-AHR runs at 128 px, so Arm C is upsampled to 224 px for the ViT. "
              "Arm A* controls for that resolution change but cannot separate it from "
              "diffusion artefacts.\n")
-    L.append("- The diffusion model was trained for 20,000 iterations. The 660,000 "
-             "figure is the `n_iter` value in the vendored upstream config "
-             "`third_party/dmahr/config/akiec.json` at commit `0aee1bb`, and the "
-             "released checkpoint is named `I725000_E1083` (725,000 iterations), so "
-             "the two upstream sources agree in magnitude. The project kit separately "
-             "specifies 20,000 iterations as the reference setting; that conflict is "
-             "recorded in decision log D1. Either way, Arm C is not a reproduction of "
-             "the released checkpoint's training budget.\n")
+    L.append("- Arm C's diffusion model was trained for 20,000 iterations with a "
+             "defective script (inverted noise-level signal, found after the primary "
+             "results; see `reports/oneshot_diagnostic_report.md`). The upstream "
+             "config's `n_iter` is 660,000 (`third_party/dmahr/config/akiec.json`, "
+             "commit `0aee1bb`) and the released checkpoint is named `I725000_E1083`. "
+             "The project kit separately specifies 20,000 iterations as the reference "
+             "setting; that conflict is recorded in decision log D1. The fixed script "
+             "did not reach usable sampling at the budgets tried, so Arm C is a "
+             "failed replication and not DM-AHR as published.\n")
+    L.append("- Creleased uses the authors' released weights. The sampling routine "
+             "that produced its images is not in this repository and cannot be "
+             "regenerated from committed code (decision log D26). The DM-AHR paper "
+             "states that the model was trained on HAM10000 images other than a "
+             "700-image test set, so it very probably saw our validation and test "
+             "images; it used no labels, so this mainly affects image-fidelity "
+             "numbers.\n")
+    L.append("- The released model leaves real hair in place and our DullRazor arm "
+             "damages lesions on real hair (see the real-hair check). The "
+             "original-against-DullRazor difference is confounded with that damage "
+             "and is not evidence about hair removal in general. Re-tuning Arm B on "
+             "training and validation images would address it; that was not done.\n")
     L.append("- `df` and `vasc` have very small test supports, so their per-class "
              "numbers are noisy.\n")
-    L.append("- The released DM-AHR weights have undocumented training data and are "
-             "used for exploration only.\n")
+    L.append("- The released DM-AHR weights were trained on HAM10000-derived images "
+             "(per the paper) and are used for exploration only.\n")
     L.append("- Augmentation differs from the proposal's wording: rotation is ±15° "
              "and uses a resized crop, where the proposal asks for ±90° rotation and "
              "explicit zoom/shift. The recipe is identical across arms, so the "

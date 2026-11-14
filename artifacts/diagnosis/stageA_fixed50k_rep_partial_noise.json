@@ -1,0 +1,82 @@
+{
+  "checkpoint": "/vol/artifacts/checkpoints/dmahr/gen_iter050000.pth",
+  "checkpoint_sha256": "77031da6dbea73ad751adf9aaddf6c7cfb2cd762582eb1c8b2bb3956d188b845",
+  "git_commit": "eb39c08e8ce03762be52cd4e76e058349165f22f",
+  "name": "fixed50k_rep",
+  "rows": [
+    {
+      "fraction_runs_below_floor": 0.0,
+      "hairy_floor_psnr": 21.357496695073092,
+      "mean_margin_db": 9.032159041374477,
+      "mean_psnr": 30.38965573644757,
+      "mean_ssim": 0.9130410869452862,
+      "pairs": 48,
+      "sd_of_seed_means": 0.10021582561569559,
+      "seed_means": [
+        30.551734686443798,
+        30.328270426226208,
+        30.28898248251731,
+        30.38963535060296
+      ],
+      "seeds": 4,
+      "steps": 50,
+      "t0": 600
+    },
+    {
+      "fraction_runs_below_floor": 0.0,
+      "hairy_floor_psnr": 21.357496695073092,
+      "mean_margin_db": 9.255438000083403,
+      "mean_psnr": 30.612934695156497,
+      "mean_ssim": 0.9141480163336385,
+      "pairs": 48,
+      "sd_of_seed_means": 0.24499143700170392,
+      "seed_means": [
+        31.022564846003934,
+        30.44440115776038,
+        30.406307893447337,
+        30.578464883414323
+      ],
+      "seeds": 4,
+      "steps": 50,
+      "t0": 1000
+    },
+    {
+      "fraction_runs_below_floor": 0.13541666666666666,
+      "hairy_floor_psnr": 21.357496695073092,
+      "mean_margin_db": 4.828613510263138,
+      "mean_psnr": 26.18611020533623,
+      "mean_ssim": 0.8248389406429681,
+      "pairs": 48,
+      "sd_of_seed_means": 0.2362959215637584,
+      "seed_means": [
+        26.11965101911844,
+        26.502005158416754,
+        25.851597774214763,
+        26.271186869594956
+      ],
+      "seeds": 4,
+      "steps": 50,
+      "t0": 1500
+    },
+    {
+      "fraction_runs_below_floor": 0.9270833333333334,
+      "hairy_floor_psnr": 21.357496695073092,
+      "mean_margin_db": -5.120953806543391,
+      "mean_psnr": 16.2365428885297,
+      "mean_ssim": 0.5973733775797685,
+      "pairs": 48,
+      "sd_of_seed_means": 0.23470414129398026,
+      "seed_means": [
+        16.264635988501585,
+        16.471682314627685,
+        15.85034983707927,
+        16.35950341391026
+      ],
+      "seeds": 4,
+      "steps": 50,
+      "t0": 1999
+    }
+  ],
+  "sampler": "ddim_respaced",
+  "val_pair_ids_sha256": "939d376887f04501108fe618cc6f163256836685b660fd466f7e525c802b86d1"
+}

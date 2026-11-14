@@ -22,6 +22,7 @@
     "optimizer": "adam",
     "checkpoint_every": 1000,
     "val_every": 1000,
+    "snapshot_every": 5000,
     "overfit_pairs": 12
   },
   "sampling": {

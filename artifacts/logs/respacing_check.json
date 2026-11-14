@@ -1,0 +1,75 @@
+{
+  "hairy_floor": {
+    "psnr": 21.209401763241793,
+    "ssim": 0.7330486728689083
+  },
+  "pairs": 25,
+  "recorded_25_step_psnr": 26.9148,
+  "respaced_matches_recorded": false,
+  "rows": [
+    {
+      "mode": "truncated",
+      "psnr": 11.443775863188096,
+      "ssim": 0.06151212987113173,
+      "status": "ok",
+      "steps": 25
+    },
+    {
+      "mode": "truncated",
+      "psnr": 13.16299876372203,
+      "ssim": 0.1217257214150124,
+      "status": "ok",
+      "steps": 50
+    },
+    {
+      "mode": "truncated",
+      "psnr": 18.203352532502592,
+      "ssim": 0.6554449592575783,
+      "status": "ok",
+      "steps": 250
+    },
+    {
+      "mode": "respaced",
+      "psnr": 23.23266228563675,
+      "ssim": 0.5949833949209055,
+      "status": "ok",
+      "steps": 25
+    },
+    {
+      "mode": "respaced",
+      "psnr": 24.228832693387975,
+      "ssim": 0.7600517406468644,
+      "status": "ok",
+      "steps": 50
+    },
+    {
+      "mode": "respaced",
+      "psnr": 20.872142385039783,
+      "ssim": 0.42899611919594777,
+      "status": "ok",
+      "steps": 250
+    },
+    {
+      "mode": "jsd25",
+      "psnr": null,
+      "ssim": null,
+      "status": "failed: FloatingPointError",
+      "steps": 25
+    },
+    {
+      "mode": "jsd25",
+      "psnr": null,
+      "ssim": null,
+      "status": "failed: FloatingPointError",
+      "steps": 50
+    },
+    {
+      "mode": "jsd25",
+      "psnr": null,
+      "ssim": null,
+      "status": "failed: FloatingPointError",
+      "steps": 250
+    }
+  ],
+  "seconds": 62.624
+}

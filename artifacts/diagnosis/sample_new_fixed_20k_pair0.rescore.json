@@ -1,0 +1,29 @@
+{
+ "pair_id": "synth_val_ISIC_0024337",
+ "reference_size": [
+  600,
+  450
+ ],
+ "scored_at_128": {
+  "output": {
+   "psnr": 28.306350334134983,
+   "ssim": 0.9381524920463562
+  },
+  "hairy": {
+   "psnr": 20.57573687968951,
+   "ssim": 0.4590567350387573
+  }
+ },
+ "scored_full_res_gate3_style": {
+  "output": {
+   "psnr": 28.173340262344936,
+   "ssim": 0.9191484956827244
+  },
+  "hairy": {
+   "psnr": 19.53805611105971,
+   "ssim": 0.7173292305576794
+  }
+ },
+ "git_commit": "1393a85bfc35563ea40c29cead5427001789aef7",
+ "npz": "artifacts/diagnosis/sample_new_fixed_20k_pair0.npz"
+}

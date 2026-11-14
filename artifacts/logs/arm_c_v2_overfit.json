@@ -1,0 +1,12 @@
+{
+  "hairy_psnr": 21.849982683703505,
+  "hairy_ssim": 0.525527969376908,
+  "iterations": 2000,
+  "margin_db": -7.312186246119094,
+  "mean_psnr": 14.537796437584412,
+  "mean_ssim": 0.287389034074619,
+  "n_pairs": 8,
+  "passed": false,
+  "required_margin_db": 3.0,
+  "steps": 1000
+}

@@ -1,0 +1,14 @@
+{
+  "gate": "1",
+  "result": {
+    "final_loss": 0.060705732218921185,
+    "floor": 21.849982683703505,
+    "margin_db": -5.180498480122015,
+    "n": 8,
+    "passed": false,
+    "psnr": 16.66948420358149,
+    "required_margin_db": 3.0
+  },
+  "steps": 1000,
+  "train_manifest_sha256": "b302eda0b4a2686a05c8b7b01484b7f71a739f3b89ec805f5c394fa97e1e37a9"
+}

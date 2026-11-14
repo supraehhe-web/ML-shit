@@ -1,0 +1,44 @@
+{
+ "n_images": 40,
+ "median_orig_coverage": 0.49749755859375,
+ "summary": {
+  "B": {
+   "median_fraction_of_hair_coverage_remaining": 0.6808654751308352,
+   "mean_fraction_remaining": 0.6347182941088528,
+   "images_with_less_than_half_remaining": 11,
+   "mean_absdiff_inside_hair_mask": 5.2233610637457675,
+   "mean_absdiff_outside_hair_mask": 0.34675153398015074,
+   "inside_over_outside_ratio": 15.063699946154443
+  },
+  "Creleased": {
+   "median_fraction_of_hair_coverage_remaining": 0.9694758168465221,
+   "mean_fraction_remaining": 0.9410586181485433,
+   "images_with_less_than_half_remaining": 1,
+   "mean_absdiff_inside_hair_mask": 2.5728304110776916,
+   "mean_absdiff_outside_hair_mask": 2.3142907725880333,
+   "inside_over_outside_ratio": 1.1117144144339899
+  },
+  "fixed50k_t600": {
+   "median_fraction_of_hair_coverage_remaining": 0.8738480575455034,
+   "mean_fraction_remaining": 0.7821207192106548,
+   "images_with_less_than_half_remaining": 3,
+   "mean_absdiff_inside_hair_mask": 3.0110150051060076,
+   "mean_absdiff_outside_hair_mask": 1.7830101365113589,
+   "inside_over_outside_ratio": 1.6887256799321206
+  },
+  "fixed50k_t1000": {
+   "median_fraction_of_hair_coverage_remaining": 0.83760322265509,
+   "mean_fraction_remaining": 0.7803053376826725,
+   "images_with_less_than_half_remaining": 4,
+   "mean_absdiff_inside_hair_mask": 4.165535197296694,
+   "mean_absdiff_outside_hair_mask": 2.8622386924950556,
+   "inside_over_outside_ratio": 1.4553416555435967
+  }
+ },
+ "provenance": {
+  "git_commit": "3f79e1689cd197afc701188875a898a21a2a1a05",
+  "detector_config_hash": "e232efe4705133a175ec50d5147954a6545456d469b6353fb42d348387704273",
+  "id_list_sha256": "7243bcc193b0325aed6e0966a2f516a3f2ceb8e7ca1b4a40c5128ebd8eac8c2a",
+  "resolution": 128
+ }
+}
